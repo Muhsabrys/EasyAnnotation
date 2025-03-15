@@ -1,5 +1,6 @@
-// Global variable for annotation options.
 let annotationOptions = [];
+let currentPage = 0;
+const pageSize = 150;
 
 // Save the data array to localStorage.
 function saveProgress(data) {
@@ -26,73 +27,75 @@ function loadOptions() {
   if (saved) {
     return JSON.parse(saved);
   }
-  // Return default if none saved.
   return ["entailment", "contradiction", "neutral"];
 }
 
-// Build the table from the data array.
+// Build the table from the data array with pagination.
 function buildTable(data) {
-  // Set start time for each row if not already set.
-  data.forEach(row => {
-    if (!row.annotationStart) {
-      row.annotationStart = Date.now();
-    }
-  });
-
+  const tableContainer = document.getElementById("tableContainer");
   let tableHTML = `<table>
                      <thead>
                        <tr>
                          <th>Hypothesis</th>
                          <th>Premise</th>
                          <th>NLI Relation</th>
-                         <th>Annotation Time (sec)</th>
                        </tr>
                      </thead>
                      <tbody>`;
-  data.forEach((row, i) => {
+  const start = currentPage * pageSize;
+  const end = Math.min(data.length, start + pageSize);
+  for (let i = start; i < end; i++) {
+    const row = data[i];
     tableHTML += `<tr>
                     <td>${row.hypothesis}</td>
                     <td>${row.premise}</td>
                     <td>
                       <div class="radio-group">`;
     annotationOptions.forEach(option => {
-      // Check the current option.
       const checked = row.relation === option ? "checked" : "";
       tableHTML += `<label><input type="radio" name="relation${i}" value="${option}" ${checked}> ${option}</label>`;
     });
     tableHTML += `</div>
                     </td>
-                    <td>${row.annotationTime ? (row.annotationTime/1000).toFixed(2) : "N/A"}</td>
                   </tr>`;
-  });
+  }
   tableHTML += `</tbody></table>`;
-  document.getElementById("tableContainer").innerHTML = tableHTML;
+  tableContainer.innerHTML = tableHTML;
+  attachRadioListeners(data, start, end);
+  updatePagination(data);
+  document.getElementById("downloadBtn").style.display = "block";
+}
 
-  // Attach event listeners to radio buttons.
-  data.forEach((row, i) => {
+// Attach event listeners to the radio buttons in the current page.
+function attachRadioListeners(data, start, end) {
+  for (let i = start; i < end; i++) {
     const radios = document.getElementsByName("relation" + i);
     radios.forEach(radio => {
       radio.addEventListener("change", function() {
-        // If no annotationTime recorded, compute the time difference.
-        if (!row.annotationTime) {
-          row.annotationTime = Date.now() - row.annotationStart;
-        }
-        row.relation = this.value;
+        data[i].relation = this.value;
         saveProgress(data);
-        // Rebuild the table to update the annotation time display.
-        buildTable(data);
       });
     });
-  });
+  }
+}
 
-  // Show the download button.
-  document.getElementById("downloadBtn").style.display = "block";
+// Update the pagination controls.
+function updatePagination(data) {
+  const paginationContainer = document.getElementById("paginationContainer");
+  if (data.length > pageSize) {
+    paginationContainer.style.display = "block";
+    const totalPages = Math.ceil(data.length / pageSize);
+    document.getElementById("pageIndicator").textContent = `Page ${currentPage + 1} of ${totalPages}`;
+    document.getElementById("prevBtn").disabled = (currentPage === 0);
+    document.getElementById("nextBtn").disabled = (currentPage >= totalPages - 1);
+  } else {
+    paginationContainer.style.display = "none";
+  }
 }
 
 // Load saved work on page load.
 document.addEventListener("DOMContentLoaded", function() {
   annotationOptions = loadOptions();
-  // Set the input value in the configuration panel.
   document.getElementById("annotationOptions").value = annotationOptions.join(", ");
   const savedData = loadProgress();
   if (savedData) {
@@ -103,10 +106,8 @@ document.addEventListener("DOMContentLoaded", function() {
 // Save new annotation options.
 document.getElementById("saveConfigBtn").addEventListener("click", function() {
   const input = document.getElementById("annotationOptions").value;
-  // Split the input on commas and trim spaces.
   annotationOptions = input.split(",").map(item => item.trim()).filter(item => item !== "");
   saveOptions(annotationOptions);
-  // If a table exists, rebuild it to use new options.
   const data = loadProgress();
   if (data) {
     buildTable(data);
@@ -127,13 +128,12 @@ document.getElementById("fileInput").addEventListener("change", function(e) {
   }
   const reader = new FileReader();
   reader.onload = function(event) {
-    const data = new Uint8Array(event.target.result);
-    const workbook = XLSX.read(data, { type: "array" });
+    const rawData = new Uint8Array(event.target.result);
+    const workbook = XLSX.read(rawData, { type: "array" });
     const firstSheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[firstSheetName];
     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
     
-    // Find 'hypothesis' and 'premise' columns.
     const headers = jsonData[0];
     const hypIndex = headers.findIndex(header => header.toLowerCase() === "hypothesis");
     const premIndex = headers.findIndex(header => header.toLowerCase() === "premise");
@@ -143,7 +143,6 @@ document.getElementById("fileInput").addEventListener("change", function(e) {
       return;
     }
 
-    // Build data array.
     let dataArray = [];
     for (let i = 1; i < jsonData.length; i++) {
       const row = jsonData[i];
@@ -152,12 +151,11 @@ document.getElementById("fileInput").addEventListener("change", function(e) {
       dataArray.push({
         hypothesis: hypothesis,
         premise: premise,
-        relation: "none",
-        annotationStart: Date.now(),
-        annotationTime: null
+        relation: "none"
       });
     }
     saveProgress(dataArray);
+    currentPage = 0;
     buildTable(dataArray);
   };
   reader.readAsArrayBuffer(file);
@@ -171,10 +169,9 @@ document.getElementById("downloadBtn").addEventListener("click", function() {
     return;
   }
   let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += "hypothesis,premise,relation,annotation_time_sec\n";
+  csvContent += "hypothesis,premise,relation\n";
   data.forEach(row => {
-    const timeSec = row.annotationTime ? (row.annotationTime/1000).toFixed(2) : "N/A";
-    csvContent += `"${row.hypothesis}","${row.premise}",${row.relation},${timeSec}\n`;
+    csvContent += `"${row.hypothesis}","${row.premise}",${row.relation}\n`;
   });
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
@@ -183,4 +180,22 @@ document.getElementById("downloadBtn").addEventListener("click", function() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+});
+
+// Pagination event listeners.
+document.getElementById("prevBtn").addEventListener("click", function() {
+  if (currentPage > 0) {
+    currentPage--;
+    const data = loadProgress();
+    buildTable(data);
+  }
+});
+
+document.getElementById("nextBtn").addEventListener("click", function() {
+  const data = loadProgress();
+  const totalPages = Math.ceil(data.length / pageSize);
+  if (currentPage < totalPages - 1) {
+    currentPage++;
+    buildTable(data);
+  }
 });
