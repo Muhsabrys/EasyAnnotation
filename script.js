@@ -56,7 +56,6 @@ function buildTable(data) {
                     <td>
                       <div class="radio-group">`;
     annotationOptions.forEach(option => {
-      // Check the current option.
       const checked = row.relation === option ? "checked" : "";
       tableHTML += `<label><input type="radio" name="relation${i}" value="${option}" ${checked}> ${option}</label>`;
     });
@@ -68,6 +67,27 @@ function buildTable(data) {
   tableHTML += `</tbody></table>`;
   document.getElementById("tableContainer").innerHTML = tableHTML;
 
+  // Attach event listeners to radio buttons.
+  data.forEach((row, i) => {
+    const radios = document.getElementsByName("relation" + i);
+    radios.forEach(radio => {
+      radio.addEventListener("change", function() {
+        // Compute the elapsed time since the previous annotation event (or row creation).
+        const elapsed = Date.now() - row.annotationStart;
+        row.annotationTime = elapsed;
+        // Reset the timer for the next annotation.
+        row.annotationStart = Date.now();
+        row.relation = this.value;
+        saveProgress(data);
+        // Rebuild the table to update the displayed annotation time.
+        buildTable(data);
+      });
+    });
+  });
+
+  // Show the download button.
+  document.getElementById("downloadBtn").style.display = "block";
+}
   // Attach event listeners to radio buttons.
   data.forEach((row, i) => {
     const radios = document.getElementsByName("relation" + i);
