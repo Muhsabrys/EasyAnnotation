@@ -1,9 +1,12 @@
+// Global variable for annotation options.
+let annotationOptions = [];
+
 // Save the data array to localStorage.
 function saveProgress(data) {
   localStorage.setItem("nliData", JSON.stringify(data));
 }
 
-// Retrieve the saved data array from localStorage.
+// Load the data array from localStorage.
 function loadProgress() {
   const saved = localStorage.getItem("nliData");
   if (saved) {
@@ -12,14 +15,37 @@ function loadProgress() {
   return null;
 }
 
-// Create the table from the data array.
+// Save the annotation options to localStorage.
+function saveOptions(options) {
+  localStorage.setItem("annotationOptions", JSON.stringify(options));
+}
+
+// Load the annotation options from localStorage.
+function loadOptions() {
+  const saved = localStorage.getItem("annotationOptions");
+  if (saved) {
+    return JSON.parse(saved);
+  }
+  // Return default if none saved.
+  return ["entailment", "contradiction", "neutral"];
+}
+
+// Build the table from the data array.
 function buildTable(data) {
+  // Set start time for each row if not already set.
+  data.forEach(row => {
+    if (!row.annotationStart) {
+      row.annotationStart = Date.now();
+    }
+  });
+
   let tableHTML = `<table>
                      <thead>
                        <tr>
                          <th>Hypothesis</th>
                          <th>Premise</th>
                          <th>NLI Relation</th>
+                         <th>Annotation Time (sec)</th>
                        </tr>
                      </thead>
                      <tbody>`;
@@ -28,12 +54,15 @@ function buildTable(data) {
                     <td>${row.hypothesis}</td>
                     <td>${row.premise}</td>
                     <td>
-                      <div class="radio-group">
-                        <label><input type="radio" name="relation${i}" value="entailment" ${row.relation === "entailment" ? "checked" : ""}> Entailment</label>
-                        <label><input type="radio" name="relation${i}" value="contradiction" ${row.relation === "contradiction" ? "checked" : ""}> Contradiction</label>
-                        <label><input type="radio" name="relation${i}" value="neutral" ${row.relation === "neutral" ? "checked" : ""}> Neutral</label>
-                      </div>
+                      <div class="radio-group">`;
+    annotationOptions.forEach(option => {
+      // Check the current option.
+      const checked = row.relation === option ? "checked" : "";
+      tableHTML += `<label><input type="radio" name="relation${i}" value="${option}" ${checked}> ${option}</label>`;
+    });
+    tableHTML += `</div>
                     </td>
+                    <td>${row.annotationTime ? (row.annotationTime/1000).toFixed(2) : "N/A"}</td>
                   </tr>`;
   });
   tableHTML += `</tbody></table>`;
@@ -42,24 +71,47 @@ function buildTable(data) {
   // Attach event listeners to radio buttons.
   data.forEach((row, i) => {
     const radios = document.getElementsByName("relation" + i);
-    radios.forEach((radio) => {
+    radios.forEach(radio => {
       radio.addEventListener("change", function() {
-        data[i].relation = this.value;
+        // If no annotationTime recorded, compute the time difference.
+        if (!row.annotationTime) {
+          row.annotationTime = Date.now() - row.annotationStart;
+        }
+        row.relation = this.value;
         saveProgress(data);
+        // Rebuild the table to update the annotation time display.
+        buildTable(data);
       });
     });
   });
 
-  // Reveal the download button.
+  // Show the download button.
   document.getElementById("downloadBtn").style.display = "block";
 }
 
 // Load saved work on page load.
 document.addEventListener("DOMContentLoaded", function() {
+  annotationOptions = loadOptions();
+  // Set the input value in the configuration panel.
+  document.getElementById("annotationOptions").value = annotationOptions.join(", ");
   const savedData = loadProgress();
   if (savedData) {
     buildTable(savedData);
   }
+});
+
+// Save new annotation options.
+document.getElementById("saveConfigBtn").addEventListener("click", function() {
+  const input = document.getElementById("annotationOptions").value;
+  // Split the input on commas and trim spaces.
+  annotationOptions = input.split(",").map(item => item.trim()).filter(item => item !== "");
+  saveOptions(annotationOptions);
+  // If a table exists, rebuild it to use new options.
+  const data = loadProgress();
+  if (data) {
+    buildTable(data);
+  }
+  alert("Annotation options saved.");
 });
 
 // Handle the file upload.
@@ -81,7 +133,7 @@ document.getElementById("fileInput").addEventListener("change", function(e) {
     const worksheet = workbook.Sheets[firstSheetName];
     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
     
-    // Locate the 'hypothesis' and 'premise' columns.
+    // Find 'hypothesis' and 'premise' columns.
     const headers = jsonData[0];
     const hypIndex = headers.findIndex(header => header.toLowerCase() === "hypothesis");
     const premIndex = headers.findIndex(header => header.toLowerCase() === "premise");
@@ -91,7 +143,7 @@ document.getElementById("fileInput").addEventListener("change", function(e) {
       return;
     }
 
-    // Build the data array.
+    // Build data array.
     let dataArray = [];
     for (let i = 1; i < jsonData.length; i++) {
       const row = jsonData[i];
@@ -100,7 +152,9 @@ document.getElementById("fileInput").addEventListener("change", function(e) {
       dataArray.push({
         hypothesis: hypothesis,
         premise: premise,
-        relation: "none"
+        relation: "none",
+        annotationStart: Date.now(),
+        annotationTime: null
       });
     }
     saveProgress(dataArray);
@@ -117,9 +171,10 @@ document.getElementById("downloadBtn").addEventListener("click", function() {
     return;
   }
   let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += "hypothesis,premise,relation\n";
+  csvContent += "hypothesis,premise,relation,annotation_time_sec\n";
   data.forEach(row => {
-    csvContent += `"${row.hypothesis}","${row.premise}",${row.relation}\n`;
+    const timeSec = row.annotationTime ? (row.annotationTime/1000).toFixed(2) : "N/A";
+    csvContent += `"${row.hypothesis}","${row.premise}",${row.relation},${timeSec}\n`;
   });
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
