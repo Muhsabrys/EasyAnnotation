@@ -32,20 +32,12 @@ function loadOptions() {
 
 // Build the table from the data array.
 function buildTable(data) {
-  // Set start time for each row if not already set.
-  data.forEach(row => {
-    if (!row.annotationStart) {
-      row.annotationStart = Date.now();
-    }
-  });
-
   let tableHTML = `<table>
                      <thead>
                        <tr>
                          <th>Hypothesis</th>
                          <th>Premise</th>
                          <th>NLI Relation</th>
-                         <th>Annotation Time (sec)</th>
                        </tr>
                      </thead>
                      <tbody>`;
@@ -61,7 +53,6 @@ function buildTable(data) {
     });
     tableHTML += `</div>
                     </td>
-                    <td>${row.annotationTime ? (row.annotationTime/1000).toFixed(2) : "N/A"}</td>
                   </tr>`;
   });
   tableHTML += `</tbody></table>`;
@@ -72,35 +63,8 @@ function buildTable(data) {
     const radios = document.getElementsByName("relation" + i);
     radios.forEach(radio => {
       radio.addEventListener("change", function() {
-        // Compute the elapsed time since the previous annotation event (or row creation).
-        const elapsed = Date.now() - row.annotationStart;
-        row.annotationTime = elapsed;
-        // Reset the timer for the next annotation.
-        row.annotationStart = Date.now();
         row.relation = this.value;
         saveProgress(data);
-        // Rebuild the table to update the displayed annotation time.
-        buildTable(data);
-      });
-    });
-  });
-
-  // Show the download button.
-  document.getElementById("downloadBtn").style.display = "block";
-}
-  // Attach event listeners to radio buttons.
-  data.forEach((row, i) => {
-    const radios = document.getElementsByName("relation" + i);
-    radios.forEach(radio => {
-      radio.addEventListener("change", function() {
-        // If no annotationTime recorded, compute the time difference.
-        if (!row.annotationTime) {
-          row.annotationTime = Date.now() - row.annotationStart;
-        }
-        row.relation = this.value;
-        saveProgress(data);
-        // Rebuild the table to update the annotation time display.
-        buildTable(data);
       });
     });
   });
@@ -172,9 +136,7 @@ document.getElementById("fileInput").addEventListener("change", function(e) {
       dataArray.push({
         hypothesis: hypothesis,
         premise: premise,
-        relation: "none",
-        annotationStart: Date.now(),
-        annotationTime: null
+        relation: "none"
       });
     }
     saveProgress(dataArray);
@@ -191,10 +153,9 @@ document.getElementById("downloadBtn").addEventListener("click", function() {
     return;
   }
   let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += "hypothesis,premise,relation,annotation_time_sec\n";
+  csvContent += "hypothesis,premise,relation\n";
   data.forEach(row => {
-    const timeSec = row.annotationTime ? (row.annotationTime/1000).toFixed(2) : "N/A";
-    csvContent += `"${row.hypothesis}","${row.premise}",${row.relation},${timeSec}\n`;
+    csvContent += `"${row.hypothesis}","${row.premise}",${row.relation}\n`;
   });
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
