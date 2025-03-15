@@ -4,9 +4,16 @@ body {
   padding: 0;
   background-color: #f9f9f9;
 }
- 
+
 h1 {
   color: #333;
+}
+
+#configPanel {
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #eee;
+  border: 1px solid #ccc;
 }
 
 table {
