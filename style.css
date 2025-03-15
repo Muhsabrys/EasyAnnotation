@@ -35,3 +35,7 @@ th, td {
   display: flex;
   gap: 10px;
 }
+
+#paginationContainer {
+  margin-top: 10px;
+}
