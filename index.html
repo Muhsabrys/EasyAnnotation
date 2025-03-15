@@ -17,8 +17,17 @@
 
   <p>Select an Excel file with sentence pairs (hypothesis and premise):</p>
   <button id="uploadBtn">Select Excel File</button>
-  <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, .tsv" style="display: none;">
+  <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
+  
   <div id="tableContainer"></div>
+  
+  <!-- Pagination Controls -->
+  <div id="paginationContainer" style="display: none;">
+    <button id="prevBtn" disabled>Previous Page</button>
+    <span id="pageIndicator">Page 1</span>
+    <button id="nextBtn">Next Page</button>
+  </div>
+  
   <button id="downloadBtn" style="display: none;">Download Annotations</button>
 
   <!-- SheetJS library from CDN -->
