@@ -36,6 +36,7 @@ function buildTable(data) {
   let tableHTML = `<table>
                      <thead>
                        <tr>
+                         <th>ID</th>
                          <th>Hypothesis</th>
                          <th>Premise</th>
                          <th>NLI Relation</th>
@@ -47,6 +48,7 @@ function buildTable(data) {
   for (let i = start; i < end; i++) {
     const row = data[i];
     tableHTML += `<tr>
+                    <td>${row.id}</td>
                     <td>${row.hypothesis}</td>
                     <td>${row.premise}</td>
                     <td>
@@ -135,6 +137,7 @@ document.getElementById("fileInput").addEventListener("change", function(e) {
     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
     
     const headers = jsonData[0];
+    const idIndex = headers.findIndex(header => header.toLowerCase() === "id");
     const hypIndex = headers.findIndex(header => header.toLowerCase() === "hypothesis");
     const premIndex = headers.findIndex(header => header.toLowerCase() === "premise");
 
@@ -146,9 +149,11 @@ document.getElementById("fileInput").addEventListener("change", function(e) {
     let dataArray = [];
     for (let i = 1; i < jsonData.length; i++) {
       const row = jsonData[i];
+      const id = idIndex !== -1 ? row[idIndex] || "" : "";
       const hypothesis = row[hypIndex] || "";
       const premise = row[premIndex] || "";
       dataArray.push({
+        id: id,
         hypothesis: hypothesis,
         premise: premise,
         relation: "none"
@@ -169,9 +174,9 @@ document.getElementById("downloadBtn").addEventListener("click", function() {
     return;
   }
   let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += "hypothesis,premise,relation\n";
+  csvContent += "id,hypothesis,premise,relation\n";
   data.forEach(row => {
-    csvContent += `"${row.hypothesis}","${row.premise}",${row.relation}\n`;
+    csvContent += `"${row.id}","${row.hypothesis}","${row.premise}",${row.relation}\n`;
   });
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
