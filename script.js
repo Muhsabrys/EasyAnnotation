@@ -31,6 +31,7 @@ function loadOptions() {
 }
 
 // Build the table from the data array with pagination.
+
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
   let tableHTML = `<table>
@@ -49,8 +50,8 @@ function buildTable(data) {
     const row = data[i];
     tableHTML += `<tr>
                     <td>${row.id}</td>
-                    <td>${row.hypothesis}</td>
-                    <td>${row.premise}</td>
+                    <td class="arabic">${row.hypothesis}</td>
+                    <td class="arabic">${row.premise}</td>
                     <td>
                       <div class="radio-group">`;
     annotationOptions.forEach(option => {
@@ -67,6 +68,7 @@ function buildTable(data) {
   updatePagination(data);
   document.getElementById("downloadBtn").style.display = "block";
 }
+
 
 // Attach event listeners to the radio buttons in the current page.
 function attachRadioListeners(data, start, end) {
