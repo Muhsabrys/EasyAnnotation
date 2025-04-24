@@ -4,12 +4,12 @@ const pageSize = 150;
 
 // Save the data array to localStorage.
 function saveProgress(data) {
-  localStorage.setItem("nliData", JSON.stringify(data));
+  localStorage.setItem("Data", JSON.stringify(data));
 }
 
 // Load the data array from localStorage.
 function loadProgress() {
-  const saved = localStorage.getItem("nliData");
+  const saved = localStorage.getItem("Data");
   if (saved) {
     return JSON.parse(saved);
   }
