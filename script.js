@@ -73,16 +73,16 @@ function getTextDirection() {
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
   let html = `<table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Hypothesis</th>
-                    <th>Premise</th>
-                    <th>Relation</th>
-                  </tr>
-                </thead>
-                <tbody>`;
-
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Premise</th>
+      <th>Hypothesis</th>
+      <th>Relation</th>
+    </tr>
+  </thead>
+  <tbody>`;
+  
   const start = currentPage * pageSize;
   const end = Math.min(data.length, start + pageSize);
 
@@ -90,11 +90,11 @@ function buildTable(data) {
     const row = data[i];
     html += `<tr>
               <td>${row.id}</td>
-              <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
-                ${row.hypothesis}
+               <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
+                ${row.premise}
               </td>
               <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
-                ${row.premise}
+                ${row.hypothesis}
               </td>
               <td><div class="radio-group">`;
     annotationOptions.forEach(opt => {
