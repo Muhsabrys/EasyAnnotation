@@ -1,4 +1,9 @@
-// ===== LANGUAGE ACCESS CONTROL =====
+/***************************************************
+ * EASYANNOTATION NLI TOOL
+ * Repo: Muhsabrys/EasyAnnotation
+ ***************************************************/
+
+// ====== LANGUAGE ACCESS CONTROL ======
 const validCodes = {
   "DE-L1-2025-NLI": "German",
   "AR-L2-2025-NLI": "Arabic",
@@ -7,42 +12,56 @@ const validCodes = {
   "ZH-L5-2025-NLI": "Chinese"
 };
 
+const langCodeMap = {
+  "German": "DE",
+  "Arabic": "AR",
+  "Spanish": "ES",
+  "Portuguese": "PT",
+  "Chinese": "ZH"
+};
+
+let userLanguage = null;
+
 function requestLanguageAccess() {
   const entered = prompt("Enter your language access code:");
   if (!entered || !validCodes[entered.trim()]) {
-    alert("Invalid code. Please contact the project admin.");
+    alert("❌ Invalid code. Please contact the project admin.");
     document.body.innerHTML = "<h2>Access denied.</h2>";
     throw new Error("Unauthorized");
   } else {
-    const lang = validCodes[entered.trim()];
-    localStorage.setItem("AnnotatorLanguage", lang);
-    document.title = `NLI Annotation – ${lang}`;
-    alert(`Access granted for ${lang} annotators.`);
+    userLanguage = validCodes[entered.trim()];
+    localStorage.setItem("AnnotatorLanguage", userLanguage);
+    document.title = `NLI Annotation – ${userLanguage}`;
+    alert(`✅ Access granted for ${userLanguage} annotators.`);
   }
 }
 
-// Run access check before anything else
-requestLanguageAccess();
-
-let annotationOptions = ["Entailment", "Contradiction", "Neutral", "NoneSense"];
+// ====== GLOBAL VARIABLES ======
+const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NoneSense"];
 let currentPage = 0;
 const pageSize = 150;
-const GITHUB_FILE_URL = "https://raw.githubusercontent.com/Muhsabrys/ArabicSimplified/main/ML/Fundamentals/abstracts.xlsx";
-const GITHUB_REPO = "Muhsabrys/ArabicSimplified";
-const OUTPUT_FILE = "ML/Fundamentals/annotations.csv";
 
-// Save data to localStorage
+const GITHUB_REPO = "Muhsabrys/EasyAnnotation";
+const BASE_DATA_PATH = "datasets/NLI/";
+const OUTPUT_FILE = "datasets/NLI/annotations.csv";
+
+// ====== LOCAL STORAGE HELPERS ======
 function saveProgress(data) {
   localStorage.setItem("Data", JSON.stringify(data));
 }
 
-// Load saved data
 function loadProgress() {
   const saved = localStorage.getItem("Data");
   return saved ? JSON.parse(saved) : null;
 }
 
-// Build the table
+// ====== FILE URL BUILDER ======
+function getFileURLForLanguage(lang) {
+  const code = langCodeMap[lang];
+  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}abstracts_${code}.xlsx`;
+}
+
+// ====== TABLE BUILDER ======
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
   let html = `<table>
@@ -102,10 +121,14 @@ function updatePagination(data) {
   document.getElementById("nextBtn").disabled = currentPage >= totalPages - 1;
 }
 
-document.getElementById("loadBtn").addEventListener("click", loadFromGitHub);
-
+// ====== LOAD DATA FROM GITHUB ======
 function loadFromGitHub() {
-  fetch(GITHUB_FILE_URL)
+  if (!userLanguage) {
+    alert("Please enter a valid access code first.");
+    return;
+  }
+  const fileURL = getFileURLForLanguage(userLanguage);
+  fetch(fileURL)
     .then(res => res.arrayBuffer())
     .then(buffer => {
       const wb = XLSX.read(buffer, { type: "array" });
@@ -118,7 +141,7 @@ function loadFromGitHub() {
       const premIdx = headers.indexOf("premise");
 
       if (hypIdx === -1 || premIdx === -1) {
-        alert("Missing 'hypothesis' or 'premise' columns");
+        alert("Missing 'Hypothesis' or 'Premise' columns");
         return;
       }
 
@@ -136,7 +159,7 @@ function loadFromGitHub() {
     .catch(err => alert("Error loading file: " + err));
 }
 
-// Download CSV
+// ====== DOWNLOAD CSV LOCALLY ======
 document.getElementById("downloadBtn").addEventListener("click", () => {
   const data = loadProgress();
   if (!data) return alert("No data available.");
@@ -148,11 +171,11 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
 
   const link = document.createElement("a");
   link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-  link.download = "annotations.csv";
+  link.download = `annotations_${userLanguage}.csv`;
   link.click();
 });
 
-// Save to GitHub
+// ====== SAVE TO GITHUB ======
 document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const token = document.getElementById("githubToken").value.trim();
   if (!token) return alert("Please enter your GitHub token.");
@@ -166,7 +189,6 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   });
 
   const content = btoa(unescape(encodeURIComponent(csv))); // base64 encode
-
   const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${OUTPUT_FILE}`, {
     method: "PUT",
     headers: {
@@ -174,17 +196,17 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      message: "Update annotations file",
+      message: `Update annotations (${userLanguage})`,
       content: content,
       branch: "main"
     })
   });
 
-  if (resp.ok) alert("Saved to GitHub successfully!");
-  else alert("Error saving to GitHub: " + (await resp.text()));
+  if (resp.ok) alert("✅ Saved to GitHub successfully!");
+  else alert("❌ Error saving to GitHub: " + (await resp.text()));
 });
 
-// Pagination
+// ====== PAGINATION ======
 document.getElementById("prevBtn").addEventListener("click", () => {
   const data = loadProgress();
   if (currentPage > 0) {
@@ -200,4 +222,10 @@ document.getElementById("nextBtn").addEventListener("click", () => {
     currentPage++;
     buildTable(data);
   }
+});
+
+// ====== PAGE LOAD ======
+document.addEventListener("DOMContentLoaded", () => {
+  requestLanguageAccess();
+  document.getElementById("loadBtn").addEventListener("click", loadFromGitHub);
 });
