@@ -1,204 +1,173 @@
-let annotationOptions = [];
+let annotationOptions = ["Entailment", "Contradiction", "Neutral", "NoneSense"];
 let currentPage = 0;
 const pageSize = 150;
+const GITHUB_FILE_URL = "https://raw.githubusercontent.com/Muhsabrys/ArabicSimplified/main/ML/Fundamentals/abstracts.xlsx";
+const GITHUB_REPO = "Muhsabrys/ArabicSimplified";
+const OUTPUT_FILE = "ML/Fundamentals/annotations.csv";
 
-// Save the data array to localStorage.
+// Save data to localStorage
 function saveProgress(data) {
   localStorage.setItem("Data", JSON.stringify(data));
 }
 
-// Load the data array from localStorage.
+// Load saved data
 function loadProgress() {
   const saved = localStorage.getItem("Data");
-  if (saved) {
-    return JSON.parse(saved);
-  }
-  return null;
+  return saved ? JSON.parse(saved) : null;
 }
 
-// Save the annotation options to localStorage.
-function saveOptions(options) {
-  localStorage.setItem("annotationOptions", JSON.stringify(options));
-}
-
-// Load the annotation options from localStorage.
-function loadOptions() {
-  const saved = localStorage.getItem("annotationOptions");
-  if (saved) {
-    return JSON.parse(saved);
-  }
-  return ["entailment", "contradiction", "neutral"];
-}
-
-// Build the table from the data array with pagination.
-
+// Build the table
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
-  let tableHTML = `<table>
-                     <thead>
-                       <tr>
-                         <th>ID</th>
-                         <th>Hypothesis</th>
-                         <th>Premise</th>
-                         <th>NLI Relation</th>
-                       </tr>
-                     </thead>
-                     <tbody>`;
+  let html = `<table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Hypothesis</th>
+                    <th>Premise</th>
+                    <th>Relation</th>
+                  </tr>
+                </thead>
+                <tbody>`;
+
   const start = currentPage * pageSize;
   const end = Math.min(data.length, start + pageSize);
+
   for (let i = start; i < end; i++) {
     const row = data[i];
-    tableHTML += `<tr>
-                    <td>${row.id}</td>
-                    <td class="arabic">${row.hypothesis}</td>
-                    <td class="arabic">${row.premise}</td>
-                    <td>
-                      <div class="radio-group">`;
-    annotationOptions.forEach(option => {
-      const checked = row.relation === option ? "checked" : "";
-      tableHTML += `<label><input type="radio" name="relation${i}" value="${option}" ${checked}> ${option}</label>`;
+    html += `<tr>
+              <td>${row.id}</td>
+              <td class="arabic">${row.hypothesis}</td>
+              <td class="arabic">${row.premise}</td>
+              <td><div class="radio-group">`;
+    annotationOptions.forEach(opt => {
+      const checked = row.relation === opt ? "checked" : "";
+      html += `<label><input type="radio" name="rel${i}" value="${opt}" ${checked}> ${opt}</label>`;
     });
-    tableHTML += `</div>
-                    </td>
-                  </tr>`;
+    html += `</div></td></tr>`;
   }
-  tableHTML += `</tbody></table>`;
-  tableContainer.innerHTML = tableHTML;
-  attachRadioListeners(data, start, end);
+
+  html += `</tbody></table>`;
+  tableContainer.innerHTML = html;
+  attachListeners(data, start, end);
   updatePagination(data);
   document.getElementById("downloadBtn").style.display = "block";
+  document.getElementById("saveGithubBtn").style.display = "block";
 }
 
-
-// Attach event listeners to the radio buttons in the current page.
-function attachRadioListeners(data, start, end) {
+function attachListeners(data, start, end) {
   for (let i = start; i < end; i++) {
-    const radios = document.getElementsByName("relation" + i);
+    const radios = document.getElementsByName("rel" + i);
     radios.forEach(radio => {
-      radio.addEventListener("change", function() {
-        data[i].relation = this.value;
+      radio.addEventListener("change", () => {
+        data[i].relation = radio.value;
         saveProgress(data);
       });
     });
   }
 }
 
-// Update the pagination controls.
 function updatePagination(data) {
-  const paginationContainer = document.getElementById("paginationContainer");
-  if (data.length > pageSize) {
-    paginationContainer.style.display = "block";
-    const totalPages = Math.ceil(data.length / pageSize);
-    document.getElementById("pageIndicator").textContent = `Page ${currentPage + 1} of ${totalPages}`;
-    document.getElementById("prevBtn").disabled = (currentPage === 0);
-    document.getElementById("nextBtn").disabled = (currentPage >= totalPages - 1);
-  } else {
-    paginationContainer.style.display = "none";
-  }
+  const totalPages = Math.ceil(data.length / pageSize);
+  const pagCont = document.getElementById("paginationContainer");
+  pagCont.style.display = data.length > pageSize ? "block" : "none";
+  document.getElementById("pageIndicator").textContent = `Page ${currentPage + 1} of ${totalPages}`;
+  document.getElementById("prevBtn").disabled = currentPage === 0;
+  document.getElementById("nextBtn").disabled = currentPage >= totalPages - 1;
 }
 
-// Load saved work on page load.
-document.addEventListener("DOMContentLoaded", function() {
-  annotationOptions = loadOptions();
-  document.getElementById("annotationOptions").value = annotationOptions.join(", ");
-  const savedData = loadProgress();
-  if (savedData) {
-    buildTable(savedData);
-  }
-});
+document.getElementById("loadBtn").addEventListener("click", loadFromGitHub);
 
-// Save new annotation options.
-document.getElementById("saveConfigBtn").addEventListener("click", function() {
-  const input = document.getElementById("annotationOptions").value;
-  annotationOptions = input.split(",").map(item => item.trim()).filter(item => item !== "");
-  saveOptions(annotationOptions);
+function loadFromGitHub() {
+  fetch(GITHUB_FILE_URL)
+    .then(res => res.arrayBuffer())
+    .then(buffer => {
+      const wb = XLSX.read(buffer, { type: "array" });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      const headers = rows[0].map(h => h.toLowerCase());
+      const idIdx = headers.indexOf("id");
+      const hypIdx = headers.indexOf("hypothesis");
+      const premIdx = headers.indexOf("premise");
+
+      if (hypIdx === -1 || premIdx === -1) {
+        alert("Missing 'hypothesis' or 'premise' columns");
+        return;
+      }
+
+      const data = rows.slice(1).map(r => ({
+        id: idIdx !== -1 ? r[idIdx] || "" : "",
+        hypothesis: r[hypIdx] || "",
+        premise: r[premIdx] || "",
+        relation: "NoneSense"
+      }));
+
+      saveProgress(data);
+      currentPage = 0;
+      buildTable(data);
+    })
+    .catch(err => alert("Error loading file: " + err));
+}
+
+// Download CSV
+document.getElementById("downloadBtn").addEventListener("click", () => {
   const data = loadProgress();
-  if (data) {
-    buildTable(data);
-  }
-  alert("Annotation options saved.");
-});
+  if (!data) return alert("No data available.");
 
-// Handle the file upload.
-document.getElementById("uploadBtn").addEventListener("click", function() {
-  document.getElementById("fileInput").click();
-});
-
-document.getElementById("fileInput").addEventListener("change", function(e) {
-  const file = e.target.files[0];
-  if (!file) {
-    alert("No file selected.");
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    const rawData = new Uint8Array(event.target.result);
-    const workbook = XLSX.read(rawData, { type: "array" });
-    const firstSheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[firstSheetName];
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-    
-    const headers = jsonData[0];
-    const idIndex = headers.findIndex(header => header.toLowerCase() === "id");
-    const hypIndex = headers.findIndex(header => header.toLowerCase() === "hypothesis");
-    const premIndex = headers.findIndex(header => header.toLowerCase() === "premise");
-
-    if (hypIndex === -1 || premIndex === -1) {
-      alert("Columns 'hypothesis' and 'premise' must exist.");
-      return;
-    }
-
-    let dataArray = [];
-    for (let i = 1; i < jsonData.length; i++) {
-      const row = jsonData[i];
-      const id = idIndex !== -1 ? row[idIndex] || "" : "";
-      const hypothesis = row[hypIndex] || "";
-      const premise = row[premIndex] || "";
-      dataArray.push({
-        id: id,
-        hypothesis: hypothesis,
-        premise: premise,
-        relation: "none"
-      });
-    }
-    saveProgress(dataArray);
-    currentPage = 0;
-    buildTable(dataArray);
-  };
-  reader.readAsArrayBuffer(file);
-});
-
-// Download a CSV file with the annotations.
-document.getElementById("downloadBtn").addEventListener("click", function() {
-  const data = loadProgress();
-  if (!data) {
-    alert("No data to download.");
-    return;
-  }
-  let csvContent = "data:text/csv;charset=utf-8,";
-  csvContent += "id,hypothesis,premise,relation\n";
-  data.forEach(row => {
-    csvContent += `"${row.id}","${row.hypothesis}","${row.premise}",${row.relation}\n`;
+  let csv = "id,hypothesis,premise,relation\n";
+  data.forEach(r => {
+    csv += `"${r.id}","${r.hypothesis}","${r.premise}","${r.relation}"\n`;
   });
-  const encodedUri = encodeURI(csvContent);
+
   const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "annotations.csv");
-  document.body.appendChild(link);
+  link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+  link.download = "annotations.csv";
   link.click();
-  document.body.removeChild(link);
 });
 
-// Pagination event listeners.
-document.getElementById("prevBtn").addEventListener("click", function() {
+// Save to GitHub
+document.getElementById("saveGithubBtn").addEventListener("click", async () => {
+  const token = document.getElementById("githubToken").value.trim();
+  if (!token) return alert("Please enter your GitHub token.");
+
+  const data = loadProgress();
+  if (!data) return alert("No data to upload.");
+
+  let csv = "id,hypothesis,premise,relation\n";
+  data.forEach(r => {
+    csv += `"${r.id}","${r.hypothesis}","${r.premise}","${r.relation}"\n`;
+  });
+
+  const content = btoa(unescape(encodeURIComponent(csv))); // base64 encode
+
+  const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${OUTPUT_FILE}`, {
+    method: "PUT",
+    headers: {
+      "Authorization": `token ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: "Update annotations file",
+      content: content,
+      branch: "main"
+    })
+  });
+
+  if (resp.ok) alert("Saved to GitHub successfully!");
+  else alert("Error saving to GitHub: " + (await resp.text()));
+});
+
+// Pagination
+document.getElementById("prevBtn").addEventListener("click", () => {
+  const data = loadProgress();
   if (currentPage > 0) {
     currentPage--;
-    const data = loadProgress();
     buildTable(data);
   }
 });
 
-document.getElementById("nextBtn").addEventListener("click", function() {
+document.getElementById("nextBtn").addEventListener("click", () => {
   const data = loadProgress();
   const totalPages = Math.ceil(data.length / pageSize);
   if (currentPage < totalPages - 1) {
