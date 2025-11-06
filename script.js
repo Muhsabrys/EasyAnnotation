@@ -58,7 +58,7 @@ function loadProgress() {
 // ====== FILE URL BUILDER ======
 function getFileURLForLanguage(lang) {
   const code = langCodeMap[lang];
-  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}abstracts_${code}.xlsx`;
+  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}NLI_${code}.xlsx`;
 }
 
 // ====== TABLE BUILDER ======
