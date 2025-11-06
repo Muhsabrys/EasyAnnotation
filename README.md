@@ -1,5 +1,7 @@
 # EasyAnnotation
 
+🔗 [Annotation Information Page](https://muhsabrys.github.io/EasyAnnotation/Annotations/Information.html)
+
 ### A Framework for Multilingual Natural Language Inference Annotation
 
 ---
