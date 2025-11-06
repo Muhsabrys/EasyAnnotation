@@ -1,6 +1,7 @@
 /***************************************************
- * EASYANNOTATION NLI TOOL – FINAL VERSION
+ * EASYANNOTATION NLI TOOL – FINAL VERSION (Updated)
  * Repo: Muhsabrys/EasyAnnotation
+ * Adds Hindi and corrects Premise → Hypothesis order
  * Saves language-based annotation CSVs to /Annotations/
  ***************************************************/
 
@@ -10,7 +11,8 @@ const validCodes = {
   "AR-L2-2025-NLI": "Arabic",
   "ES-L3-2025-NLI": "Spanish",
   "PT-L4-2025-NLI": "Portuguese",
-  "ZH-L5-2025-NLI": "Chinese"
+  "ZH-L5-2025-NLI": "Chinese",
+  "HI-L6-2025-NLI": "Hindi"
 };
 
 const langCodeMap = {
@@ -18,7 +20,8 @@ const langCodeMap = {
   "Arabic": "AR",
   "Spanish": "ES",
   "Portuguese": "PT",
-  "Chinese": "ZH"
+  "Chinese": "ZH",
+  "Hindi": "HI"
 };
 
 let userLanguage = null;
@@ -62,12 +65,12 @@ function getFileURLForLanguage(lang) {
   return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}NLI_${code}.xlsx`;
 }
 
+// ====== TEXT DIRECTION HANDLER ======
 function getTextDirection() {
-  // Return text direction based on selected language
+  // Only Arabic is RTL
   if (userLanguage === "Arabic") return "rtl";
   return "ltr";
 }
-
 
 // ====== TABLE BUILDER ======
 function buildTable(data) {
@@ -82,7 +85,7 @@ function buildTable(data) {
     </tr>
   </thead>
   <tbody>`;
-  
+
   const start = currentPage * pageSize;
   const end = Math.min(data.length, start + pageSize);
 
@@ -90,7 +93,7 @@ function buildTable(data) {
     const row = data[i];
     html += `<tr>
               <td>${row.id}</td>
-               <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
+              <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
                 ${row.premise}
               </td>
               <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
