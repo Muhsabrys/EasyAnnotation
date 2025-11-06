@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About the Annotation Process – EasyAnnotation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #1e293b;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .content-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      padding: 3rem;
+      margin-bottom: 2rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .content-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: white;
+      border-radius: 20px;
+      margin-bottom: 3rem;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.2);
+    }
+    
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+    
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #334155;
+      margin: 2rem 0 1rem 0;
+      border-left: 4px solid #667eea;
+      padding-left: 1rem;
+    }
+    
+    .label-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .label-card {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 2px solid #3b82f6;
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .label-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    }
+    
+    .label-card.entailment {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      border-color: #22c55e;
+    }
+    
+    .label-card.contradiction {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border-color: #ef4444;
+    }
+    
+    .label-card.neutral {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-color: #f59e0b;
+    }
+    
+    .label-card.nonsense {
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      border-color: #6b7280;
+    }
+    
+    .label-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .label-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .example-block {
+      background: #f8fafc;
+      border-left: 5px solid #667eea;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      transition: all 0.3s ease;
+    }
+    
+    .example-block:hover {
+      background: #f1f5f9;
+      border-left-width: 8px;
+      padding-left: 1.75rem;
+    }
+    
+    .example-block.advanced {
+      border-left-color: #f59e0b;
+      background: linear-gradient(to right, #fffbeb 0%, #fef3c7 100%);
+    }
+    
+    .example-text {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      margin: 0.5rem 0;
+    }
+    
+    .premise {
+      color: #1e40af;
+      font-weight: 600;
+    }
+    
+    .hypothesis {
+      color: #7c3aed;
+      font-weight: 600;
+    }
+    
+    .relation-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    
+    .badge-entailment {
+      background: #22c55e;
+      color: white;
+    }
+    
+    .badge-contradiction {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .badge-neutral {
+      background: #f59e0b;
+      color: white;
+    }
+    
+    .badge-nonsense {
+      background: #6b7280;
+      color: white;
+    }
+    
+    .explanation-box {
+      background: #ede9fe;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-style: italic;
+      color: #5b21b6;
+      border-left: 3px solid #8b5cf6;
+    }
+    
+    .interactive-example {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .interactive-example.active {
+      border-color: #667eea;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .code-box {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+    
+    .access-codes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    
+    .access-code-item {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    
+    .access-code-item:hover {
+      transform: scale(1.05);
+    }
+    
+    .quiz-container {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin-top: 2rem;
+    }
+    
+    .quiz-selector {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    select, button, input[type="text"] {
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    select:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .question-card {
+      background: #f8fafc;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+    
+    .question-card:hover {
+      border-color: #667eea;
+    }
+    
+    .question-card.correct {
+      border-color: #22c55e;
+      background: #f0fdf4;
+    }
+    
+    .question-card.incorrect {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+    
+    .feedback {
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    
+    .feedback.correct {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .feedback.incorrect {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .tip-box {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-left: 4px solid #f59e0b;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+    
+    .tip-box strong {
+      color: #92400e;
+    }
+    
+    .language-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .lang-tab {
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+    
+    .lang-tab:hover {
+      border-color: #667eea;
+      background: #f8fafc;
+    }
+    
+    .lang-tab.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: transparent;
+    }
+    
+    .lang-content {
+      display: none;
+    }
+    
+    .lang-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e 0%, #10b981 100%);
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      
+      .content-card {
+        padding: 1.5rem;
+      }
+      
+      .label-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Hero Section -->
+    <div class="hero">
+      <h1>🎯 EasyAnnotation</h1>
+      <p class="hero-subtitle"> Natural Language Inference Annotation Task</p>
+    </div>
+
+    <!-- What is NLI? -->
+    <div class="content-card">
+      <h2> Understanding Natural Language Inference (NLI)</h2>
+      <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem;">
+        Natural Language Inference (NLI) is a fundamental task in natural language understanding that evaluates 
+        the logical relationship between two statements. This task tests whether a machine can understand the 
+        semantic implications and contradictions that humans naturally recognize in language.
+      </p>
+      
+      <div class="tip-box">
+        <strong>🎓 Why NLI Matters:</strong> NLI is crucial for applications like fact-checking, question answering, 
+        reading comprehension, and dialogue systems. A model that understands entailment can better reason about 
+        text and make logical inferences.
+      </div>
+
+      <h3>The Two-Sentence Structure</h3>
+      <p style="margin: 1rem 0;">Every NLI task involves two components:</p>
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 0.75rem; background: #dbeafe; border-radius: 8px; margin: 0.5rem 0;">
+          <strong class="premise">📌 Premise:</strong> The foundational statement accepted as true. This provides the context or facts.
+        </li>
+        <li style="padding: 0.75rem; background: #ede9fe; border-radius: 8px; margin: 0.5rem 0;">
+          <strong class="hypothesis">🔍 Hypothesis:</strong> The statement we're testing against the premise. We determine its relationship to the premise.
+        </li>
+      </ul>
+
+      <h3 style="margin-top: 2rem;">The Four Relationship Categories</h3>
+      <div class="label-grid">
+        
+        <div class="label-card entailment" onclick="highlightLabel('entailment')">
+          <div class="label-icon">✅</div>
+          <div class="label-title">Entailment</div>
+          <p>The hypothesis <strong>logically follows</strong> from the premise. If the premise is true, the hypothesis <strong>must be true</strong>.</p>
+          <div class="explanation-box" style="background: #dcfce7; color: #166534; border-color: #22c55e;">
+            Think: "This is a logical consequence"
+          </div>
+        </div>
+
+        <div class="label-card contradiction" onclick="highlightLabel('contradiction')">
+          <div class="label-icon">❌</div>
+          <div class="label-title">Contradiction</div>
+          <p>The hypothesis <strong>directly conflicts</strong> with the premise. If the premise is true, the hypothesis <strong>must be false</strong>.</p>
+          <div class="explanation-box" style="background: #fee2e2; color: #991b1b; border-color: #ef4444;">
+            Think: "These cannot both be true"
+          </div>
+        </div>
+
+        <div class="label-card neutral" onclick="highlightLabel('neutral')">
+          <div class="label-icon">➖</div>
+          <div class="label-title">Neutral</div>
+          <p>The hypothesis <strong>might or might not</strong> be true. The premise doesn't provide enough information to determine truth or falsehood.</p>
+          <div class="explanation-box" style="background: #fef3c7; color: #92400e; border-color: #f59e0b;">
+            Think: "Could be true, but we don't know"
+          </div>
+        </div>
+
+        <div class="label-card nonsense" onclick="highlightLabel('nonsense')">
+          <div class="label-icon">⚠️</div>
+          <div class="label-title">Nonsense</div>
+          <p>The hypothesis is <strong>incoherent, grammatically broken</strong>, or doesn't form a complete, understandable statement.</p>
+          <div class="explanation-box" style="background: #f3f4f6; color: #374151; border-color: #6b7280;">
+            Think: "This doesn't make sense"
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- Advanced Examples with Explanations -->
+    <div class="content-card">
+      <h2>💡 Sample Examples </h2>
+      
+      <h3>Example Set 1: Basic Logical Inference</h3>
+      
+      <div class="example-block">
+        <p class="example-text"><strong class="premise">Premise:</strong> The museum closes at 6 PM every weekday.</p>
+        <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> You cannot visit the museum at 7 PM on Tuesday.</p>
+        <span class="relation-badge badge-entailment">✅ Entailment</span>
+        <div class="explanation-box">
+          <strong>Why?</strong> Tuesday is a weekday, and if the museum closes at 6 PM, it's logically impossible to visit at 7 PM. 
+          This is a clear temporal entailment.
+        </div>
+      </div>
+
+      <div class="example-block">
+        <p class="example-text"><strong class="premise">Premise:</strong> Sarah has been a vegetarian for five years.</p>
+        <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> Sarah ate a steak yesterday.</p>
+        <span class="relation-badge badge-contradiction">❌ Contradiction</span>
+        <div class="explanation-box">
+          <strong>Why?</strong> Vegetarians don't eat meat by definition. If Sarah has been vegetarian for five years, 
+          eating a steak yesterday would contradict this fact.
+        </div>
+      </div>
+
+      <div class="example-block">
+        <p class="example-text"><strong class="premise">Premise:</strong> The company hired 10 new software engineers.</p>
+        <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> The company's revenue increased this quarter.</p>
+        <span class="relation-badge badge-neutral">➖ Neutral</span>
+        <div class="explanation-box">
+          <strong>Why?</strong> Hiring engineers might lead to growth, but it doesn't guarantee increased revenue. 
+          Revenue could stay the same or even decrease. We lack sufficient information.
+        </div>
+      </div>
+
+      <h3>Example Set 2: Nuanced Reasoning</h3>
+      
+      <div class="example-block advanced">
+        <p class="example-text"><strong class="premise">Premise:</strong> All participants in the study were between 18 and 25 years old.</p>
+        <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> No minors participated in the study.</p>
+        <span class="relation-badge badge-entailment">✅ Entailment</span>
+        <div class="explanation-box">
+          <strong>Why?</strong> Since minors are defined as those under 18, and all participants were 18+, this is a logical entailment. 
+          This tests understanding of age definitions.
+        </div>
+      </div>
+
+      <div class="example-block advanced">
+        <p class="example-text"><strong class="premise">Premise:</strong> The medicine should be taken twice daily with food.</p>
+        <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> Taking the medicine on an empty stomach is recommended.</p>
+        <span class="relation-badge badge-contradiction">❌ Contradiction</span>
+        <div class="explanation-box">
+          <strong>Why?</strong> "With food" directly contradicts "on an empty stomach." This is a clear instructional contradiction.
+        </div>
+      </div>
+
+      <div class="example-block advanced">
+        <p class="example-text"><strong class="premise">Premise:</strong> The experiment was conducted in a controlled laboratory environment.</p>
+        <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> The results can be generalized to real-world settings.</p>
+        <span class="relation-badge badge-neutral">➖ Neutral</span>
+        <div class="explanation-box">
+          <strong>Why?</strong> Lab conditions don't automatically mean results can't be generalized, but they also don't guarantee it. 
+          External validity requires additional evidence not provided in the premise.
+        </div>
+      </div>
+
+      <h3>Example Set 3: Tricky Edge Cases</h3>
+      
+      <div class="example-block advanced">
+        <p class="example-text"><strong class="premise">Premise:</strong> Either John or Mary will attend the meeting.</p>
+        <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> John will attend the meeting.</p>
+        <span class="relation-badge badge-neutral">➖ Neutral</span>
+        <div class="explanation-box">
+          <strong>Why?</strong> "Either/or" means at least one will attend, but doesn't specify which one. John might attend, 
+          or Mary might attend, or both might attend. We cannot determine John's attendance with certainty.
+        </div>
+      </div>
+
+      <div class="example-block advanced">
+        <p class="example-text"><strong class="premise">Premise:</strong> The temperature dropped below freezing last night.</p>
+        <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> Water in outdoor containers would have frozen.</p>
+        <span class="relation-badge badge-entailment">✅ Entailment</span>
+        <div class="explanation-box">
+          <strong>Why?</strong> This tests physical knowledge. Water freezes at 0°C/32°F (freezing point), 
+          so if temperature went below freezing, exposed water must freeze. This is a scientific entailment.
+        </div>
+      </div>
+
+      <div class="example-block">
+        <p class="example-text"><strong class="premise">Premise:</strong> The restaurant serves Italian cuisine.</p>
+        <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> You can order sushi there.</p>
+        <span class="relation-badge badge-neutral">➖ Neutral</span>
+        <div class="explanation-box">
+          <strong>Why?</strong> While Italian restaurants typically don't serve sushi, some fusion restaurants might. 
+          The premise doesn't explicitly state it's exclusively Italian, so we can't be certain.
+        </div>
+      </div>
+    </div>
+
+    <!-- Multilingual Examples with Language Tabs -->
+    <div class="content-card">
+      <h2>🌍 Multilingual NLI Examples</h2>
+      
+      <div class="language-tabs">
+        <div class="lang-tab active" onclick="switchLanguage('german')">🇩🇪 Deutsch</div>
+        <div class="lang-tab" onclick="switchLanguage('arabic')">🇸🇦 العربية</div>
+        <div class="lang-tab" onclick="switchLanguage('spanish')">🇪🇸 Español</div>
+        <div class="lang-tab" onclick="switchLanguage('portuguese')">🇧🇷 Português</div>
+        <div class="lang-tab" onclick="switchLanguage('chinese')">🇨🇳 中文</div>
+      </div>
+
+      <!-- German Examples -->
+      <div id="lang-german" class="lang-content active">
+        <h3>Deutsch (German)</h3>
+        
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">Premise:</strong> Der Zug fährt jeden Morgen um 7:30 Uhr ab.</p>
+          <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> Man kann um 7:45 Uhr in den Zug einsteigen.</p>
+          <span class="relation-badge badge-contradiction">❌ Widerspruch (Contradiction)</span>
+          <div class="explanation-box">
+            If the train departs at 7:30, you cannot board at 7:45. This tests temporal reasoning.
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">Premise:</strong> Die Bibliothek hat über 100.000 Bücher.</p>
+          <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> Die Bibliothek ist sehr gut ausgestattet.</p>
+          <span class="relation-badge badge-entailment">✅ Schlussfolgerung (Entailment)</span>
+          <div class="explanation-box">
+            100,000+ books logically implies a well-equipped library. This is subjective but reasonable inference.
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">Premise:</strong> Das Konzert wurde wegen Regen verschoben.</p>
+          <p class="example-text"><strong class="hypothesis">Hypothesis:</strong> Die Band war krank.</p>
+          <span class="relation-badge badge-neutral">➖ Neutral</span>
+          <div class="explanation-box">
+            The concert was postponed due to rain, not because the band was sick. These are independent facts.
+          </div>
+        </div>
+      </div>
+
+      <!-- Arabic Examples -->
+      <div id="lang-arabic" class="lang-content">
+        <h3>العربية (Arabic)</h3>
+        
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">الجملة الأصلية:</strong> الطبيب نصح المريض بالراحة التامة لمدة أسبوعين.</p>
+          <p class="example-text"><strong class="hypothesis">الافتراض:</strong> يجب على المريض تجنب العمل الشاق.</p>
+          <span class="relation-badge badge-entailment">✅ تضمين (Entailment)</span>
+          <div class="explanation-box">
+            Complete rest for two weeks logically entails avoiding strenuous work.
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">الجملة الأصلية:</strong> جميع المتاجر مغلقة يوم الجمعة.</p>
+          <p class="example-text"><strong class="hypothesis">الافتراض:</strong> يمكنك التسوق يوم الجمعة.</p>
+          <span class="relation-badge badge-contradiction">❌ تناقض (Contradiction)</span>
+          <div class="explanation-box">
+            If all stores are closed on Friday, shopping on Friday is impossible.
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">الجملة الأصلية:</strong> الطالب يدرس الهندسة في الجامعة.</p>
+          <p class="example-text"><strong class="hypothesis">الافتراض:</strong> الطالب يجيد الرياضيات.</p>
+          <span class="relation-badge badge-neutral">➖ محايد (Neutral)</span>
+          <div class="explanation-box">
+            Studying engineering doesn't automatically mean being good at mathematics, though it's common.
+          </div>
+        </div>
+      </div>
+
+      <!-- Spanish Examples -->
+      <div id="lang-spanish" class="lang-content">
+        <h3>Español (Spanish)</h3>
+        
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">Premisa:</strong> La conferencia comienza exactamente a las 9:00 AM.</p>
+          <p class="example-text"><strong class="hypothesis">Hipótesis:</strong> Si llegas a las 9:15, habrás perdido el inicio.</p>
+          <span class="relation-badge badge-entailment">✅ Implicación (Entailment)</span>
+          <div class="explanation-box">
+            If the conference starts at 9:00 and you arrive at 9:15, you've missed the beginning by definition.
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">Premisa:</strong> María es alérgica a los frutos secos.</p>
+          <p class="example-text"><strong class="hypothesis">Hipótesis:</strong> María puede comer almendras sin problemas.</p>
+          <span class="relation-badge badge-contradiction">❌ Contradicción (Contradiction)</span>
+          <div class="explanation-box">
+            Almonds are nuts. If María is allergic to nuts, she cannot eat almonds without problems.
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">Premisa:</strong> El restaurante tiene una estrella Michelin.</p>
+          <p class="example-text"><strong class="hypothesis">Hipótesis:</strong> La comida es muy cara.</p>
+          <span class="relation-badge badge-neutral">➖ Neutral</span>
+          <div class="explanation-box">
+            Michelin stars often correlate with higher prices, but it's not guaranteed. Some starred restaurants are affordable.
+          </div>
+        </div>
+      </div>
+
+      <!-- Portuguese Examples -->
+      <div id="lang-portuguese" class="lang-content">
+        <h3>Português (Portuguese)</h3>
+        
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">Premissa:</strong> Todos os alunos da turma passaram no exame.</p>
+          <p class="example-text"><strong class="hypothesis">Hipótese:</strong> Nenhum aluno reprovou.</p>
+          <span class="relation-badge badge-entailment">✅ Implicação (Entailment)</span>
+          <div class="explanation-box">
+            "All students passed" is logically equivalent to "no student failed." This tests logical equivalence.
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">Premissa:</strong> O voo está programado para decolar às 14h.</p>
+          <p class="example-text"><strong class="hypothesis">Hipótese:</strong> O voo já decolou às 13h.</p>
+          <span class="relation-badge badge-contradiction">❌ Contradição (Contradiction)</span>
+          <div class="explanation-box">
+            If the flight is scheduled for 2 PM, it cannot have already departed at 1 PM (assuming current time is before 2 PM).
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">Premissa:</strong> A empresa lançou um novo produto no mercado.</p>
+          <p class="example-text"><strong class="hypothesis">Hipótese:</strong> As vendas da empresa vão aumentar.</p>
+          <span class="relation-badge badge-neutral">➖ Neutro (Neutral)</span>
+          <div class="explanation-box">
+            Launching a new product doesn't guarantee increased sales. The product could fail or cannibalize existing sales.
+          </div>
+        </div>
+      </div>
+
+      <!-- Chinese Examples -->
+      <div id="lang-chinese" class="lang-content">
+        <h3>中文 (Chinese)</h3>
+        
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">前提：</strong> 这家商店每天营业到晚上10点。</p>
+          <p class="example-text"><strong class="hypothesis">假设：</strong> 你可以在晚上11点去购物。</p>
+          <span class="relation-badge badge-contradiction">❌ 矛盾 (Contradiction)</span>
+          <div class="explanation-box">
+            If the store closes at 10 PM, shopping at 11 PM is impossible.
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">前提：</strong> 所有参赛者都必须年满18岁。</p>
+          <p class="example-text"><strong class="hypothesis">假设：</strong> 未成年人不能参加比赛。</p>
+          <span class="relation-badge badge-entailment">✅ 蕴含 (Entailment)</span>
+          <div class="explanation-box">
+            If all participants must be 18+, then minors (under 18) cannot participate. This is logical entailment.
+          </div>
+        </div>
+
+        <div class="example-block">
+          <p class="example-text"><strong class="premise">前提：</strong> 这部电影获得了奥斯卡最佳影片奖。</p>
+          <p class="example-text"><strong class="hypothesis">假设：</strong> 每个人都喜欢这部电影。</p>
+          <span class="relation-badge badge-neutral">➖ 中性 (Neutral)</span>
+          <div class="explanation-box">
+            Winning an Oscar doesn't mean everyone likes the film. Awards and universal appeal are independent.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Access Information -->
+    <div class="content-card">
+      <h2>🔑 Annotation Access</h2>
+      
+      <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">
+        Each annotator receives a unique, language-specific access code to unlock their assigned dataset. 
+        These codes ensure you work on the correct language and track your contributions. Your access code 
+        will be provided to you directly by the project coordinator.
+      </p>
+    </div>
+
+    <!-- Interactive Quiz -->
+    <div class="content-card">
+      <h2>🧩 Short Comprehension Quiz</h2>
+      
+      <div class="quiz-container">
+        <div class="quiz-selector">
+          <select id="langSelect" style="flex: 1; min-width: 200px;">
+            <option value="English">🌐 English</option>
+            <option value="German">🇩🇪 Deutsch</option>
+            <option value="Arabic">🇸🇦 العربية</option>
+            <option value="Spanish">🇪🇸 Español</option>
+            <option value="Portuguese">🇧🇷 Português</option>
+            <option value="Chinese">🇨🇳 中文</option>
+          </select>
+          <button onclick="startQuiz()">🚀 Start Quiz</button>
+        </div>
+
+        <div id="quizProgress" style="display:none;">
+          <p style="font-weight: 600; margin-bottom: 0.5rem;">Progress:</p>
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+          </div>
+          <p id="progressText" style="text-align: center; margin-top: 0.5rem; color: #64748b;"></p>
+        </div>
+
+        <div id="quizArea"></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; padding: 2rem; color: white; font-size: 0.9rem;">
+      <p>Made with ❤️ for the NLI Research Community</p>
+      <p style="margin-top: 0.5rem; opacity: 0.8;">© 2025 EasyAnnotation Project</p>
+    </div>
+
+  </div>
+
+  <script>
+    // Enhanced quiz data with more sophisticated examples
+    const quizData = {
+      English: [
+        {
+          premise: "The restaurant requires reservations for parties of six or more.",
+          hypothesis: "You can walk in with seven people without a reservation.",
+          correct: "Contradiction",
+          explanation: "The premise states reservations are required for 6+, so walking in with 7 contradicts this rule."
+        },
+        {
+          premise: "The CEO announced the company will expand into three new markets next year.",
+          hypothesis: "The company's revenue will increase next year.",
+          correct: "Neutral",
+          explanation: "Expansion doesn't guarantee revenue increase. It could lead to losses or take time to generate profit."
+        },
+        {
+          premise: "All attendees must sign a non-disclosure agreement before entering.",
+          hypothesis: "Anyone who enters has signed an NDA.",
+          correct: "Entailment",
+          explanation: "If signing is required before entry, everyone who entered must have signed. Logical consequence."
+        },
+        {
+          premise: "The medication should not be taken with alcohol.",
+          hypothesis: "You can drink wine while taking this medication.",
+          correct: "Contradiction",
+          explanation: "Wine is alcohol, so this directly contradicts the medical instruction."
+        },
+        {
+          premise: "The study included 500 participants from urban areas.",
+          hypothesis: "The findings apply to rural populations.",
+          correct: "Neutral",
+          explanation: "Urban study results don't automatically apply to rural areas without additional evidence."
+        }
+      ],
+      German: [
+        {
+          premise: "Der Kurs findet nur montags und mittwochs statt.",
+          hypothesis: "Man kann den Kurs am Dienstag besuchen.",
+          correct: "Contradiction",
+          explanation: "The course only runs Monday and Wednesday, so attending Tuesday is impossible."
+        },
+        {
+          premise: "Das Museum hat eine Sonderausstellung über moderne Kunst.",
+          hypothesis: "Die Ausstellung zeigt Gemälde von Picasso.",
+          correct: "Neutral",
+          explanation: "Modern art exhibition doesn't specify which artists are included."
+        },
+        {
+          premise: "Alle Mitarbeiter müssen bis Freitag den Bericht einreichen.",
+          hypothesis: "Nach Freitag kann der Bericht nicht mehr eingereicht werden.",
+          correct: "Entailment",
+          explanation: "Deadline is Friday, so logically the report cannot be submitted after Friday."
+        }
+      ],
+      Arabic: [
+        {
+          premise: "المكتبة تفتح أبوابها من الساعة 8 صباحاً حتى 5 مساءً.",
+          hypothesis: "يمكنك زيارة المكتبة في الساعة 6 مساءً.",
+          correct: "Contradiction",
+          explanation: "Library closes at 5 PM, so visiting at 6 PM is impossible."
+        },
+        {
+          premise: "الفريق فاز بجميع مبارياته هذا الموسم.",
+          hypothesis: "الفريق لم يخسر أي مباراة.",
+          correct: "Entailment",
+          explanation: "Winning all matches logically means not losing any matches."
+        },
+        {
+          premise: "الطقس غائم اليوم.",
+          hypothesis: "سوف تمطر لاحقاً.",
+          correct: "Neutral",
+          explanation: "Cloudy weather doesn't guarantee rain. It might or might not rain."
+        }
+      ],
+      Spanish: [
+        {
+          premise: "El vuelo sale a las 6:30 AM y la puerta cierra 30 minutos antes.",
+          hypothesis: "Debes estar en la puerta antes de las 6:00 AM.",
+          correct: "Entailment",
+          explanation: "Gate closes at 6:00 AM (30 min before 6:30), so you must be there before 6:00."
+        },
+        {
+          premise: "El apartamento tiene tres dormitorios.",
+          hypothesis: "El apartamento es adecuado para una familia grande.",
+          correct: "Neutral",
+          explanation: "Three bedrooms might suit some families, but 'large family' is subjective and undefined."
+        },
+        {
+          premise: "Todos los productos están en oferta con un 50% de descuento.",
+          hypothesis: "Algunos productos mantienen su precio original.",
+          correct: "Contradiction",
+          explanation: "'All products' at 50% off contradicts 'some products' at original price."
+        }
+      ],
+      Portuguese: [
+        {
+          premise: "O contrato de trabalho é de seis meses com possibilidade de renovação.",
+          hypothesis: "O emprego é permanente.",
+          correct: "Contradiction",
+          explanation: "Six-month contract with possibility of renewal contradicts permanent employment."
+        },
+        {
+          premise: "A temperatura máxima hoje será de 35 graus.",
+          hypothesis: "Vai fazer muito calor.",
+          correct: "Entailment",
+          explanation: "35 degrees is objectively very hot, so 'very hot' logically follows."
+        },
+        {
+          premise: "O restaurante serve comida orgânica.",
+          hypothesis: "A comida é saudável.",
+          correct: "Neutral",
+          explanation: "Organic doesn't automatically mean healthy. Preparation and ingredients matter."
+        }
+      ],
+      Chinese: [
+        {
+          premise: "图书馆规定每次最多借阅5本书。",
+          hypothesis: "你可以一次借10本书。",
+          correct: "Contradiction",
+          explanation: "Maximum of 5 books contradicts borrowing 10 books at once."
+        },
+        {
+          premise: "会议将在周三下午2点举行。",
+          hypothesis: "你需要在周三下午空出时间。",
+          correct: "Entailment",
+          explanation: "If meeting is Wednesday at 2 PM, you need to be free Wednesday afternoon."
+        },
+        {
+          premise: "这家公司生产电子产品。",
+          hypothesis: "公司生产智能手机。",
+          correct: "Neutral",
+          explanation: "Electronics is broad. Company might or might not produce smartphones."
+        }
+      ]
+    };
+
+    let currentQuiz = null;
+    let currentQuestionIndex = 0;
+    let userAnswers = [];
+
+    function switchLanguage(lang) {
+      // Hide all language contents
+      document.querySelectorAll('.lang-content').forEach(el => el.classList.remove('active'));
+      // Show selected language
+      document.getElementById('lang-' + lang).classList.add('active');
+      
+      // Update tabs
+      document.querySelectorAll('.lang-tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function highlightLabel(type) {
+      // Simple animation effect
+      const cards = document.querySelectorAll('.label-card');
+      cards.forEach(card => {
+        card.style.transform = 'scale(1)';
+        card.style.opacity = '0.5';
+      });
+      
+      const targetCard = event.currentTarget;
+      targetCard.style.transform = 'scale(1.1)';
+      targetCard.style.opacity = '1';
+      
+      setTimeout(() => {
+        cards.forEach(card => {
+          card.style.transform = 'scale(1)';
+          card.style.opacity = '1';
+        });
+      }, 1000);
+    }
+
+    function startQuiz() {
+      const lang = document.getElementById("langSelect").value;
+      currentQuiz = quizData[lang];
+      currentQuestionIndex = 0;
+      userAnswers = new Array(currentQuiz.length).fill(null);
+      
+      const area = document.getElementById("quizArea");
+      const progress = document.getElementById("quizProgress");
+      
+      progress.style.display = "block";
+      updateProgress();
+      
+      let html = `<h3 style="margin-bottom: 2rem;">Quiz – ${lang}</h3>`;
+      
+      currentQuiz.forEach((q, idx) => {
+        html += `
+          <div class="question-card" id="question${idx}">
+            <h4 style="color: #667eea; font-weight: 600; margin-bottom: 1rem;">Question ${idx + 1} of ${currentQuiz.length}</h4>
+            <p style="margin-bottom: 0.5rem;"><strong class="premise">Premise:</strong> ${q.premise}</p>
+            <p style="margin-bottom: 1rem;"><strong class="hypothesis">Hypothesis:</strong> ${q.hypothesis}</p>
+            <p style="font-weight: 600; margin-bottom: 0.75rem;">What is the relation?</p>
+            <select id="ans${idx}" onchange="answerQuestion(${idx}, this.value)" style="width: 100%; margin-bottom: 1rem;">
+              <option value="">Choose your answer...</option>
+              <option value="Entailment">✅ Entailment</option>
+              <option value="Contradiction">❌ Contradiction</option>
+              <option value="Neutral">➖ Neutral</option>
+              <option value="Nonsense">⚠️ Nonsense</option>
+            </select>
+            <div id="feedback${idx}"></div>
+          </div>
+        `;
+      });
+      
+      html += `<button onclick="submitQuiz()" style="width: 100%; margin-top: 1rem; padding: 1rem; font-size: 1.1rem;">📊 Submit Quiz & See Results</button>`;
+      area.innerHTML = html;
+    }
+
+    function answerQuestion(index, answer) {
+      userAnswers[index] = answer;
+      updateProgress();
+      
+      // Provide immediate feedback
+      const question = currentQuiz[index];
+      const feedbackDiv = document.getElementById(`feedback${index}`);
+      const questionCard = document.getElementById(`question${index}`);
+      
+      if (answer === question.correct) {
+        feedbackDiv.innerHTML = `<div class="feedback correct">✅ Correct! ${question.explanation}</div>`;
+        questionCard.classList.add('correct');
+        questionCard.classList.remove('incorrect');
+      } else if (answer !== "") {
+        feedbackDiv.innerHTML = `<div class="feedback incorrect">❌ Not quite. The correct answer is ${question.correct}. ${question.explanation}</div>`;
+        questionCard.classList.add('incorrect');
+        questionCard.classList.remove('correct');
+      }
+    }
+
+    function updateProgress() {
+      const answered = userAnswers.filter(a => a !== null).length;
+      const total = currentQuiz.length;
+      const percentage = (answered / total) * 100;
+      
+      document.getElementById('progressFill').style.width = percentage + '%';
+      document.getElementById('progressText').textContent = `${answered} of ${total} questions answered`;
+    }
+
+    function submitQuiz() {
+      let correct = 0;
+      currentQuiz.forEach((q, i) => {
+        if (userAnswers[i] === q.correct) correct++;
+      });
+      
+      const percentage = Math.round((correct / currentQuiz.length) * 100);
+      let message = '';
+      let emoji = '';
+      
+      if (percentage === 100) {
+        emoji = '🎉🏆';
+        message = 'Perfect score! You\'re an NLI expert!';
+      } else if (percentage >= 80) {
+        emoji = '🌟';
+        message = 'Excellent work! You have a strong understanding of NLI.';
+      } else if (percentage >= 60) {
+        emoji = '👍';
+        message = 'Good job! Review the explanations to improve further.';
+      } else {
+        emoji = '📚';
+        message = 'Keep practicing! Review the examples and explanations above.';
+      }
+      
+      alert(`${emoji}\n\nYou got ${correct} out of ${currentQuiz.length} correct (${percentage}%)!\n\n${message}`);
+      
+      // Scroll to top to review
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
