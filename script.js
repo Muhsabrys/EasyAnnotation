@@ -1,3 +1,29 @@
+// ===== LANGUAGE ACCESS CONTROL =====
+const validCodes = {
+  "DE-L1-2025-NLI": "German",
+  "AR-L2-2025-NLI": "Arabic",
+  "ES-L3-2025-NLI": "Spanish",
+  "PT-L4-2025-NLI": "Portuguese",
+  "ZH-L5-2025-NLI": "Chinese"
+};
+
+function requestLanguageAccess() {
+  const entered = prompt("Enter your language access code:");
+  if (!entered || !validCodes[entered.trim()]) {
+    alert("Invalid code. Please contact the project admin.");
+    document.body.innerHTML = "<h2>Access denied.</h2>";
+    throw new Error("Unauthorized");
+  } else {
+    const lang = validCodes[entered.trim()];
+    localStorage.setItem("AnnotatorLanguage", lang);
+    document.title = `NLI Annotation – ${lang}`;
+    alert(`Access granted for ${lang} annotators.`);
+  }
+}
+
+// Run access check before anything else
+requestLanguageAccess();
+
 let annotationOptions = ["Entailment", "Contradiction", "Neutral", "NoneSense"];
 let currentPage = 0;
 const pageSize = 150;
