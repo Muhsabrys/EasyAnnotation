@@ -189,22 +189,44 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   });
 
   const content = btoa(unescape(encodeURIComponent(csv))); // base64 encode
-  const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${OUTPUT_FILE}`, {
+  const filePath = OUTPUT_FILE;
+  const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`;
+
+  // 🧩 Step 1: Try to get the existing file's SHA
+  let sha = null;
+  const getResp = await fetch(apiUrl, {
+    headers: { Authorization: `token ${token}` }
+  });
+  if (getResp.ok) {
+    const json = await getResp.json();
+    sha = json.sha;
+  }
+
+  // 🧩 Step 2: Create or update the file with/without SHA
+  const putBody = {
+    message: `Update annotations (${userLanguage})`,
+    content: content,
+    branch: "main"
+  };
+  if (sha) putBody.sha = sha;
+
+  const putResp = await fetch(apiUrl, {
     method: "PUT",
     headers: {
       "Authorization": `token ${token}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      message: `Update annotations (${userLanguage})`,
-      content: content,
-      branch: "main"
-    })
+    body: JSON.stringify(putBody)
   });
 
-  if (resp.ok) alert("✅ Saved to GitHub successfully!");
-  else alert("❌ Error saving to GitHub: " + (await resp.text()));
+  if (putResp.ok) {
+    alert("✅ Saved to GitHub successfully!");
+  } else {
+    const err = await putResp.text();
+    alert("❌ Error saving to GitHub:\n" + err);
+  }
 });
+
 
 // ====== PAGINATION ======
 document.getElementById("prevBtn").addEventListener("click", () => {
