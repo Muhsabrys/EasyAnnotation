@@ -1,6 +1,7 @@
 /***************************************************
- * EASYANNOTATION NLI TOOL
+ * EASYANNOTATION NLI TOOL – FINAL VERSION
  * Repo: Muhsabrys/EasyAnnotation
+ * Saves language-based annotation CSVs to /Annotations/
  ***************************************************/
 
 // ====== LANGUAGE ACCESS CONTROL ======
@@ -43,7 +44,7 @@ const pageSize = 150;
 
 const GITHUB_REPO = "Muhsabrys/EasyAnnotation";
 const BASE_DATA_PATH = "datasets/NLI/";
-const OUTPUT_FILE = "datasets/NLI/annotations.csv";
+const OUTPUT_FOLDER = "Annotations/";
 
 // ====== LOCAL STORAGE HELPERS ======
 function saveProgress(data) {
@@ -58,7 +59,7 @@ function loadProgress() {
 // ====== FILE URL BUILDER ======
 function getFileURLForLanguage(lang) {
   const code = langCodeMap[lang];
-  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}NLI_${code}.xlsx`;
+  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}abstracts_${code}.xlsx`;
 }
 
 // ====== TABLE BUILDER ======
@@ -169,13 +170,17 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
     csv += `"${r.id}","${r.hypothesis}","${r.premise}","${r.relation}"\n`;
   });
 
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const code = langCodeMap[userLanguage];
+  const filename = `annotations_${code}_${timestamp}.csv`;
+
   const link = document.createElement("a");
   link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-  link.download = `annotations_${userLanguage}.csv`;
+  link.download = filename;
   link.click();
 });
 
-// ====== SAVE TO GITHUB ======
+// ====== SAVE TO GITHUB (New File Each Time) ======
 document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const token = document.getElementById("githubToken").value.trim();
   if (!token) return alert("Please enter your GitHub token.");
@@ -189,44 +194,30 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   });
 
   const content = btoa(unescape(encodeURIComponent(csv))); // base64 encode
-  const filePath = OUTPUT_FILE;
-  const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`;
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const code = langCodeMap[userLanguage];
+  const filePath = `${OUTPUT_FOLDER}annotations_${code}_${timestamp}.csv`;
 
-  // 🧩 Step 1: Try to get the existing file's SHA
-  let sha = null;
-  const getResp = await fetch(apiUrl, {
-    headers: { Authorization: `token ${token}` }
-  });
-  if (getResp.ok) {
-    const json = await getResp.json();
-    sha = json.sha;
-  }
-
-  // 🧩 Step 2: Create or update the file with/without SHA
-  const putBody = {
-    message: `Update annotations (${userLanguage})`,
-    content: content,
-    branch: "main"
-  };
-  if (sha) putBody.sha = sha;
-
-  const putResp = await fetch(apiUrl, {
+  const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`, {
     method: "PUT",
     headers: {
       "Authorization": `token ${token}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(putBody)
+    body: JSON.stringify({
+      message: `New annotation upload (${userLanguage}) at ${timestamp}`,
+      content: content,
+      branch: "main"
+    })
   });
 
-  if (putResp.ok) {
-    alert("✅ Saved to GitHub successfully!");
+  if (resp.ok) {
+    alert(`✅ Uploaded successfully to GitHub as ${filePath}`);
   } else {
-    const err = await putResp.text();
+    const err = await resp.text();
     alert("❌ Error saving to GitHub:\n" + err);
   }
 });
-
 
 // ====== PAGINATION ======
 document.getElementById("prevBtn").addEventListener("click", () => {
