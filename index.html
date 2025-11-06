@@ -2,35 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>NLI Interface</title>
+  <title>NLI Annotation Interface</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>NLI Sentence Pair Interface</h1>
+  <h1>NLI Annotation Interface</h1>
 
-  <!-- Configuration Panel -->
-  <div id="configPanel">
-    <label for="annotationOptions">Annotation Options (comma separated):</label>
-    <input type="text" id="annotationOptions" placeholder="e.g. entailment, contradiction, neutral" value="entailment, contradiction, neutral">
-    <button id="saveConfigBtn">Save Options</button>
+  <div id="controls">
+    <p>Annotations will load automatically from your GitHub file.</p>
+    <button id="loadBtn">Load Data from GitHub</button>
+    <button id="downloadBtn" style="display:none;">Download CSV</button>
+    <button id="saveGithubBtn" style="display:none;">Save to GitHub</button>
   </div>
 
-  <p>Select an Excel file with sentence pairs (ID, hypothesis, and premise):</p>
-  <button id="uploadBtn">Select Excel File</button>
-  <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
-  
   <div id="tableContainer"></div>
-  
-  <!-- Pagination Controls -->
-  <div id="paginationContainer" style="display: none;">
+
+  <div id="paginationContainer" style="display:none;">
     <button id="prevBtn" disabled>Previous Page</button>
     <span id="pageIndicator">Page 1</span>
     <button id="nextBtn">Next Page</button>
   </div>
-  
-  <button id="downloadBtn" style="display: none;">Download Annotations</button>
 
-  <!-- SheetJS library from CDN -->
+  <div id="tokenContainer">
+    <label for="githubToken">GitHub Token (only needed for saving):</label>
+    <input type="password" id="githubToken" placeholder="Paste your token here">
+  </div>
+
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="script.js"></script>
 </body>
