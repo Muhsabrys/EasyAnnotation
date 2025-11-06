@@ -62,6 +62,13 @@ function getFileURLForLanguage(lang) {
   return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}NLI_${code}.xlsx`;
 }
 
+function getTextDirection() {
+  // Return text direction based on selected language
+  if (userLanguage === "Arabic") return "rtl";
+  return "ltr";
+}
+
+
 // ====== TABLE BUILDER ======
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
@@ -83,8 +90,12 @@ function buildTable(data) {
     const row = data[i];
     html += `<tr>
               <td>${row.id}</td>
-              <td class="arabic">${row.hypothesis}</td>
-              <td class="arabic">${row.premise}</td>
+              <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
+                ${row.hypothesis}
+              </td>
+              <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
+                ${row.premise}
+              </td>
               <td><div class="radio-group">`;
     annotationOptions.forEach(opt => {
       const checked = row.relation === opt ? "checked" : "";
