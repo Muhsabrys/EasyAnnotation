@@ -13,6 +13,7 @@ const validCodes = {
   "PT-L4-2025-NLI": "Portuguese",
   "ZH-L5-2025-NLI": "Chinese",
   "HI-L6-2025-NLI": "Hindi"
+  "TH-L7-2025-NLI": "Thai"
 };
 
 const langCodeMap = {
@@ -22,6 +23,7 @@ const langCodeMap = {
   "Portuguese": "PT",
   "Chinese": "ZH",
   "Hindi": "HI"
+  "Thai": "TH"
 };
 
 let userLanguage = null;
