@@ -1,7 +1,8 @@
 /***************************************************
  * EASYANNOTATION NLI TOOL – FINAL VERSION (Updated)
  * Repo: Muhsabrys/EasyAnnotation
- * Adds Hindi and corrects Premise → Hypothesis order
+ * Adds Hindi, Thai, Urdu
+ * Corrects Premise → Hypothesis order
  * Saves language-based annotation CSVs to /Annotations/
  ***************************************************/
 
@@ -12,8 +13,9 @@ const validCodes = {
   "ES-L3-2025-NLI": "Spanish",
   "PT-L4-2025-NLI": "Portuguese",
   "ZH-L5-2025-NLI": "Chinese",
-  "HI-L6-2025-NLI": "Hindi"
-  "TH-L7-2025-NLI": "Thai"
+  "HI-L6-2025-NLI": "Hindi",
+  "TH-L7-2025-NLI": "Thai",
+  "UR-L8-2025-NLI": "Urdu"
 };
 
 const langCodeMap = {
@@ -22,8 +24,9 @@ const langCodeMap = {
   "Spanish": "ES",
   "Portuguese": "PT",
   "Chinese": "ZH",
-  "Hindi": "HI"
-  "Thai": "TH"
+  "Hindi": "HI",
+  "Thai": "TH",
+  "Urdu": "UR"
 };
 
 let userLanguage = null;
@@ -69,8 +72,8 @@ function getFileURLForLanguage(lang) {
 
 // ====== TEXT DIRECTION HANDLER ======
 function getTextDirection() {
-  // Only Arabic is RTL
-  if (userLanguage === "Arabic") return "rtl";
+  // Arabic and Urdu are RTL languages
+  if (userLanguage === "Arabic" || userLanguage === "Urdu") return "rtl";
   return "ltr";
 }
 
