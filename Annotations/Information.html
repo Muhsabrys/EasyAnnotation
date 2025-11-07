@@ -800,6 +800,52 @@
       </p>
     </div>
 
+<h2 class="text-2xl font-semibold mt-10 mb-4">💬 When (and When Not) to Use “NonSense”</h2>
+
+<p>
+The label <strong>NonSense</strong> should be used only when a sentence pair cannot be interpreted meaningfully — for example, because of a corrupted or incomplete translation.
+If both sentences still make sense, even if they differ in meaning, please choose one of
+<strong>Entailment</strong>, <strong>Contradiction</strong>, or <strong>Neutral</strong> instead.
+</p>
+
+<div class="mt-4 bg-white p-4 border border-gray-200 rounded-lg shadow-sm">
+  <h3 class="font-semibold text-lg mb-2">✅ When to Annotate Normally</h3>
+  <ul class="list-disc ml-6 space-y-2">
+    <li>If a sentence is fully grammatical and interpretable, it should <em>not</em> be labeled as NonSense.</li>
+    <li>Minor translation differences or tense shifts are fine — choose the logical relation instead.</li>
+    <li>Proper names or titles translated differently still count as valid sentences. Use Neutral or Contradiction if meaning changes.</li>
+  </ul>
+</div>
+
+<div class="mt-6 bg-blue-50 p-4 border-l-4 border-blue-400 rounded-md">
+  <h3 class="font-semibold mb-2">🌍 Multilingual Examples</h3>
+  
+  <h4 class="font-semibold mt-3 text-blue-700">English</h4>
+  <ul class="list-disc ml-6">
+    <li><strong>Premise:</strong> She sang <em>Happy Birthday</em>.<br>
+        <strong>Hypothesis:</strong> She sang the birthday song.<br>
+        → <strong>Entailment</strong> (same meaning)</li>
+    <li><strong>Premise:</strong> He hit the ball.<br>
+        <strong>Hypothesis:</strong> He hits the ball.<br>
+        → <strong>Neutral</strong> (different tense, unclear time reference)</li>
+    <li><strong>Premise:</strong> Adam Driver starred in the film.<br>
+        <strong>Hypothesis:</strong> Adam the driver starred in the film.<br>
+        → <strong>Contradiction</strong> (mistranslation changes meaning, but both sentences make sense)</li>
+  </ul>
+
+<div class="mt-6 bg-red-50 p-4 border-l-4 border-red-400 rounded-md">
+  <h3 class="font-semibold mb-2">🚫 When to Use “NonSense”</h3>
+  <p>Reserve this label only for pairs that are truly uninterpretable or broken, such as:</p>
+  <ul class="list-disc ml-6">
+    <li>Machine translation errors that produce unreadable text</li>
+    <li>Incomplete or truncated sentences</li>
+    <li>Random strings with no coherent meaning</li>
+  </ul>
+  <p class="mt-2 italic">If the pair makes sense at all, even if it’s wrong or mismatched — it’s <strong>not NonSense</strong>.</p>
+</div>
+
+
+
     <!-- Interactive Quiz -->
     <div class="content-card">
       <h2>🧩 Short Comprehension Quiz</h2>
