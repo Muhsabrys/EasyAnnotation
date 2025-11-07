@@ -46,7 +46,7 @@ function requestLanguageAccess() {
 }
 
 // ====== GLOBAL VARIABLES ======
-const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NoneSense"];
+const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NonSense"];
 let currentPage = 0;
 const pageSize = 150;
 
@@ -169,7 +169,7 @@ function loadFromGitHub() {
         id: idIdx !== -1 ? r[idIdx] || "" : "",
         hypothesis: r[hypIdx] || "",
         premise: r[premIdx] || "",
-        relation: "NoneSense"
+        relation: "NonSense"
       }));
 
       saveProgress(data);
