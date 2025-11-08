@@ -1,8 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NLI Annotation Interface</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    vertical-align: top;
+  }
+  th {
+    background-color: #f0f0f0;
+  }
+  .radio-group label {
+    margin-right: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h2>NLI Annotation Interface</h2>
+<p>Annotations will load automatically from your GitHub file.</p>
+
+<button id="loadBtn">Load Data from GitHub</button>
+<button id="downloadBtn" style="display:none;">Download XLSX</button>
+<button id="saveGithubBtn" style="display:none;">Save to GitHub</button>
+<input type="password" id="githubToken" placeholder="GitHub Token" style="display:block;margin-top:10px;width:300px;">
+
+<div id="tableContainer"></div>
+
+<div id="paginationContainer" style="display:none;margin-top:20px;">
+  <button id="prevBtn">Previous</button>
+  <span id="pageIndicator"></span>
+  <button id="nextBtn">Next</button>
+</div>
+
+<script>
 /***************************************************
- * EASYANNOTATION NLI TOOL – CLEAN, STABLE, XLSX-ONLY
- * Repo: Muhsabrys/EasyAnnotation
- * Always saves and loads XLSX with columns:
- * ID | Premise | Hypothesis | Relation
+ * EASYANNOTATION NLI TOOL – FINAL XLSX VERSION
  ***************************************************/
 
 // ====== LANGUAGE ACCESS CONTROL ======
@@ -58,44 +102,28 @@ const BACKUP_FOLDER = "Backups/";
 function saveProgress(data) {
   localStorage.setItem("Data", JSON.stringify(data));
 }
-
 function loadProgress() {
   const saved = localStorage.getItem("Data");
   return saved ? JSON.parse(saved) : null;
 }
 
-// ====== FILE URL BUILDER ======
-function getFileURLForLanguage(lang) {
-  const code = langCodeMap[lang];
-  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${OUTPUT_FOLDER}annotations_${code}.xlsx`;
-}
-
 // ====== TABLE BUILDER ======
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
-  let html = `<table style="width:100%; text-align:left;">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Premise</th>
-        <th>Hypothesis</th>
-        <th>Relation</th>
-      </tr>
-    </thead>
-    <tbody>`;
+  let html = `<table><thead><tr>
+    <th>ID</th><th>Premise</th><th>Hypothesis</th><th>Relation</th>
+  </tr></thead><tbody>`;
 
   const start = currentPage * pageSize;
   const end = Math.min(data.length, start + pageSize);
 
   for (let i = start; i < end; i++) {
     const row = data[i];
-    html += `
-      <tr>
-        <td>${row.id || ""}</td>
-        <td>${row.premise || ""}</td>
-        <td>${row.hypothesis || ""}</td>
-        <td>
-          <div class="radio-group">`;
+    html += `<tr>
+      <td>${row.id || ""}</td>
+      <td>${row.premise || ""}</td>
+      <td>${row.hypothesis || ""}</td>
+      <td><div class="radio-group">`;
 
     annotationOptions.forEach(opt => {
       const checked = row.relation === opt ? "checked" : "";
@@ -109,6 +137,7 @@ function buildTable(data) {
   tableContainer.innerHTML = html;
   attachListeners(data, start, end);
   updatePagination(data);
+  document.getElementById("downloadBtn").style.display = "block";
   document.getElementById("saveGithubBtn").style.display = "block";
 }
 
@@ -133,54 +162,61 @@ function updatePagination(data) {
   document.getElementById("nextBtn").disabled = currentPage >= totalPages - 1;
 }
 
-// ====== LOAD DATA FROM GITHUB (ANNOTATION FILE) ======
-function loadFromGitHub() {
+// ====== LOAD DATA (SMART FALLBACK) ======
+async function loadFromGitHub() {
   if (!userLanguage) {
     alert("Please enter your access code first.");
     return;
   }
 
-  const fileURL = getFileURLForLanguage(userLanguage);
-  fetch(fileURL)
-    .then(res => {
-      if (!res.ok) throw new Error("File not found or access issue.");
-      return res.arrayBuffer();
-    })
-    .then(buffer => {
-      const wb = XLSX.read(buffer, { type: "array" });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  const code = langCodeMap[userLanguage];
+  const mainFileURL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${OUTPUT_FOLDER}annotations_${code}.xlsx`;
+  const fallbackURL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}NLI_${code}.xlsx`;
 
-      const headers = rows[0].map(h => h.toLowerCase());
-      const idIdx = headers.indexOf("id");
-      const premIdx = headers.indexOf("premise");
-      const hypIdx = headers.indexOf("hypothesis");
-      const relIdx = headers.indexOf("relation");
+  async function tryLoad(url) {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const buffer = await res.arrayBuffer();
+    const wb = XLSX.read(buffer, { type: "array" });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    return rows;
+  }
 
-      if (premIdx === -1 || hypIdx === -1) {
-        alert("❌ Missing 'Premise' or 'Hypothesis' columns.");
-        return;
-      }
+  let rows = await tryLoad(mainFileURL);
+  if (!rows) {
+    alert(`⚠️ No saved annotations found for ${userLanguage}. Loading original dataset instead.`);
+    rows = await tryLoad(fallbackURL);
+    if (!rows) {
+      alert("❌ Could not load either annotations or dataset file.");
+      return;
+    }
+  } else {
+    alert(`✅ Loaded saved annotations for ${userLanguage}.`);
+  }
 
-      const data = rows.slice(1).map(r => ({
-        id: r[idIdx] || "",
-        premise: r[premIdx] || "",
-        hypothesis: r[hypIdx] || "",
-        relation: relIdx !== -1 ? (r[relIdx] || "NonSense") : "NonSense"
-      }));
+  const headers = rows[0].map(h => h.toLowerCase());
+  const idIdx = headers.indexOf("id");
+  const premIdx = headers.indexOf("premise");
+  const hypIdx = headers.indexOf("hypothesis");
+  const relIdx = headers.indexOf("relation");
 
-      saveProgress(data);
-      currentPage = 0;
-      buildTable(data);
-    })
-    .catch(err => alert("⚠️ Error loading data: " + err.message));
+  const data = rows.slice(1).map(r => ({
+    id: r[idIdx] || "",
+    premise: r[premIdx] || "",
+    hypothesis: r[hypIdx] || "",
+    relation: relIdx !== -1 ? (r[relIdx] || "NonSense") : "NonSense"
+  }));
+
+  saveProgress(data);
+  currentPage = 0;
+  buildTable(data);
 }
 
-// ====== SAVE XLSX TO GITHUB (UPDATE SAME FILE + BACKUP) ======
+// ====== SAVE TO GITHUB ======
 document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const token = document.getElementById("githubToken").value.trim();
   if (!token) return alert("Please enter your GitHub token.");
-
   const data = loadProgress();
   if (!data) return alert("No data to upload.");
 
@@ -188,12 +224,11 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
     ["ID", "Premise", "Hypothesis", "Relation"],
     ...data.map(r => [r.id, r.premise, r.hypothesis, r.relation])
   ];
-
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(worksheetData);
   XLSX.utils.book_append_sheet(wb, ws, "Annotations");
-
   const wbout = XLSX.write(wb, { bookType: "xlsx", type: "base64" });
+
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const code = langCodeMap[userLanguage];
   const mainFile = `${OUTPUT_FOLDER}annotations_${code}.xlsx`;
@@ -223,6 +258,21 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   else alert("❌ Error saving files to GitHub.");
 });
 
+// ====== DOWNLOAD LOCAL XLSX ======
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  const data = loadProgress();
+  if (!data) return alert("No data to download.");
+
+  const worksheetData = [
+    ["ID", "Premise", "Hypothesis", "Relation"],
+    ...data.map(r => [r.id, r.premise, r.hypothesis, r.relation])
+  ];
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+  XLSX.utils.book_append_sheet(wb, ws, "Annotations");
+  XLSX.writeFile(wb, `annotations_${langCodeMap[userLanguage]}.xlsx`);
+});
+
 // ====== PAGINATION ======
 document.getElementById("prevBtn").addEventListener("click", () => {
   const data = loadProgress();
@@ -231,7 +281,6 @@ document.getElementById("prevBtn").addEventListener("click", () => {
     buildTable(data);
   }
 });
-
 document.getElementById("nextBtn").addEventListener("click", () => {
   const data = loadProgress();
   const totalPages = Math.ceil(data.length / pageSize);
@@ -246,3 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
   requestLanguageAccess();
   document.getElementById("loadBtn").addEventListener("click", loadFromGitHub);
 });
+</script>
+</body>
+</html>
