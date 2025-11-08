@@ -46,7 +46,7 @@ function requestLanguageAccess() {
 }
 
 // ====== GLOBAL VARIABLES ======
-const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NoneSense"];
+const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NonSense"];
 let currentPage = 0;
 const pageSize = 150;
 const GITHUB_REPO = "Muhsabrys/EasyAnnotation";
@@ -178,7 +178,7 @@ function loadFromGitHub() {
         id: idIdx !== -1 ? r[idIdx] || "" : "",
         premise: r[premIdx] || "",
         hypothesis: r[hypIdx] || "",
-        relation: "NoneSense"
+        relation: "NonSense"
       }));
 
       saveProgress(data);
