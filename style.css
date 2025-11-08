@@ -1,45 +1,107 @@
+/* ====== General Page Layout ====== */
 body {
   font-family: Arial, sans-serif;
   margin: 20px;
   background-color: #f9f9f9;
+  color: #222;
 }
 
 h1 {
   color: #333;
   margin-bottom: 20px;
+  font-size: 26px;
 }
 
 #controls {
   margin-bottom: 15px;
 }
 
+button {
+  margin-right: 10px;
+  padding: 6px 12px;
+  border: 1px solid #888;
+  background: #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #ddd;
+}
+
+/* ====== Token / Save Section ====== */
 #tokenContainer {
   margin-top: 20px;
 }
 
+/* ====== Table Layout ====== */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 15px;
   background: white;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
 }
 
 th, td {
   border: 1px solid #ccc;
-  padding: 8px;
+  padding: 8px 10px;
   text-align: left;
+  vertical-align: top;
 }
 
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  color: #333;
+}
+
+tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* ====== Arabic and RTL Support ====== */
 .arabic {
   direction: rtl;
   text-align: right;
 }
 
+/* ====== Radio Buttons ====== */
 .radio-group {
   display: flex;
-  gap: 10px;
+  flex-wrap: nowrap;
+  gap: 20px;
+  align-items: center;
 }
 
+.radio-group label {
+  display: inline-block;
+  margin-right: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  margin-right: 5px;
+}
+
+/* Optional hover effect for clarity */
+.radio-group label:hover {
+  background: #f1f1f1;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* ====== Pagination ====== */
 #paginationContainer {
-  margin-top: 10px;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+#pageIndicator {
+  font-weight: bold;
+  color: #444;
 }
