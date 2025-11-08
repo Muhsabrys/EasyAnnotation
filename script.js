@@ -72,21 +72,22 @@ function loadProgress() {
 }
 
 // ====== TABLE BUILDER ======
+
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
-
-  // Decide column order based on language
   const rtlLangs = ["Arabic", "Urdu"];
   const isRTL = rtlLangs.includes(userLanguage);
   const dir = isRTL ? "rtl" : "ltr";
   const align = isRTL ? "right" : "left";
 
-  let html = `<table>
-    <thead><tr>
-      <th>ID</th>
-      ${isRTL ? "<th>Hypothesis</th><th>Premise</th>" : "<th>Premise</th><th>Hypothesis</th>"}
-      <th>Relation</th>
-    </tr></thead><tbody>`;
+  // Dynamic headers
+  const headers = isRTL
+    ? "<th>ID</th><th>Hypothesis</th><th>Premise</th><th>Relation</th>"
+    : "<th>ID</th><th>Premise</th><th>Hypothesis</th><th>Relation</th>";
+
+  let html = `<table dir="${dir}" style="text-align:${align}; width:100%;">
+    <thead><tr>${headers}</tr></thead>
+    <tbody>`;
 
   const start = currentPage * pageSize;
   const end = Math.min(data.length, start + pageSize);
@@ -94,18 +95,20 @@ function buildTable(data) {
   for (let i = start; i < end; i++) {
     const row = data[i];
 
-    html += `<tr><td>${row.id || ""}</td>`;
+    html += "<tr>";
 
     if (isRTL) {
-      // RTL: Hypothesis first
+      // Arabic/Urdu layout: Hypothesis → Premise
       html += `
-        <td style="direction:${dir}; text-align:${align};">${row.hypothesis || ""}</td>
-        <td style="direction:${dir}; text-align:${align};">${row.premise || ""}</td>`;
+        <td>${row.id || ""}</td>
+        <td>${row.hypothesis || ""}</td>
+        <td>${row.premise || ""}</td>`;
     } else {
-      // LTR: Premise first
+      // Default layout: Premise → Hypothesis
       html += `
-        <td style="direction:${dir}; text-align:${align};">${row.premise || ""}</td>
-        <td style="direction:${dir}; text-align:${align};">${row.hypothesis || ""}</td>`;
+        <td>${row.id || ""}</td>
+        <td>${row.premise || ""}</td>
+        <td>${row.hypothesis || ""}</td>`;
     }
 
     html += `<td><div class="radio-group">`;
@@ -124,6 +127,7 @@ function buildTable(data) {
   document.getElementById("downloadBtn").style.display = "block";
   document.getElementById("saveGithubBtn").style.display = "block";
 }
+
 
 function attachListeners(data, start, end) {
   for (let i = start; i < end; i++) {
