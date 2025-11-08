@@ -2,8 +2,7 @@
  * EASYANNOTATION NLI TOOL – FINAL XLSX VERSION
  * Repo: Muhsabrys/EasyAnnotation
  * Each language has one persistent .xlsx file on GitHub.
- * Annotators can recall and update the same file.
- * Handles multilingual headers flexibly.
+ * Automatically creates backups in /Annotations/backups/.
  ***************************************************/
 
 // ====== LANGUAGE ACCESS CONTROL ======
@@ -48,13 +47,14 @@ function requestLanguageAccess() {
 }
 
 // ====== GLOBAL VARIABLES ======
-const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NonSense"];
+const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NoneSense"];
 let currentPage = 0;
 const pageSize = 150;
 
 const GITHUB_REPO = "Muhsabrys/EasyAnnotation";
 const DATA_PATH = "datasets/NLI/";
 const ANNO_PATH = "Annotations/";
+const BACKUP_PATH = "Annotations/backups/";
 
 // ====== TEXT DIRECTION HANDLER ======
 function getTextDirection() {
@@ -74,11 +74,17 @@ function loadProgress() {
 // ====== TABLE BUILDER ======
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
+
+  // Decide column order based on language
+  const rtlLangs = ["Arabic", "Urdu"];
+  const isRTL = rtlLangs.includes(userLanguage);
+  const dir = isRTL ? "rtl" : "ltr";
+  const align = isRTL ? "right" : "left";
+
   let html = `<table>
     <thead><tr>
       <th>ID</th>
-      <th>Premise</th>
-      <th>Hypothesis</th>
+      ${isRTL ? "<th>Hypothesis</th><th>Premise</th>" : "<th>Premise</th><th>Hypothesis</th>"}
       <th>Relation</th>
     </tr></thead><tbody>`;
 
@@ -87,15 +93,22 @@ function buildTable(data) {
 
   for (let i = start; i < end; i++) {
     const row = data[i];
-    html += `<tr>
-      <td>${row.id || ""}</td>
-      <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
-        ${row.premise || ""}
-      </td>
-      <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
-        ${row.hypothesis || ""}
-      </td>
-      <td><div class="radio-group">`;
+
+    html += `<tr><td>${row.id || ""}</td>`;
+
+    if (isRTL) {
+      // RTL: Hypothesis first
+      html += `
+        <td style="direction:${dir}; text-align:${align};">${row.hypothesis || ""}</td>
+        <td style="direction:${dir}; text-align:${align};">${row.premise || ""}</td>`;
+    } else {
+      // LTR: Premise first
+      html += `
+        <td style="direction:${dir}; text-align:${align};">${row.premise || ""}</td>
+        <td style="direction:${dir}; text-align:${align};">${row.hypothesis || ""}</td>`;
+    }
+
+    html += `<td><div class="radio-group">`;
     annotationOptions.forEach(opt => {
       const checked = row.relation === opt ? "checked" : "";
       html += `<label><input type="radio" name="rel${i}" value="${opt}" ${checked}> ${opt}</label>`;
@@ -105,6 +118,7 @@ function buildTable(data) {
 
   html += `</tbody></table>`;
   tableContainer.innerHTML = html;
+
   attachListeners(data, start, end);
   updatePagination(data);
   document.getElementById("downloadBtn").style.display = "block";
@@ -152,7 +166,6 @@ async function loadFromGitHub() {
   try {
     const resp = await fetch(annoFileURL);
     if (resp.ok) {
-      // ✅ Existing annotation file
       const json = await resp.json();
       fileSHA = json.sha;
       const binary = atob(json.content);
@@ -167,7 +180,7 @@ async function loadFromGitHub() {
       buildTable(rows);
       alert("✅ Loaded existing annotations from GitHub.");
     } else {
-      // 📄 Load original dataset
+      // load base dataset
       const datasetURL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${DATA_PATH}NLI_${code}.xlsx`;
       const res = await fetch(datasetURL);
       const buffer = await res.arrayBuffer();
@@ -186,19 +199,19 @@ async function loadFromGitHub() {
         id: r[idIdx] || "",
         hypothesis: r[hypIdx] || "",
         premise: r[premIdx] || "",
-        relation: "NonSense"
+        relation: "NoneSense"
       }));
 
       saveProgress(data);
       buildTable(data);
-      alert("📄 No annotation file found. Started a new dataset.");
+      alert("📄 Started a new dataset (no prior annotations found).");
     }
   } catch (err) {
     alert("❌ Error loading file: " + err);
   }
 }
 
-// ====== SAVE TO GITHUB (XLSX UPDATE) ======
+// ====== SAVE TO GITHUB (with Backup) ======
 document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const token = document.getElementById("githubToken").value.trim();
   if (!token) return alert("Please enter your GitHub token.");
@@ -214,6 +227,26 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const code = langCodeMap[userLanguage];
   const filePath = `${ANNO_PATH}annotations_${code}.xlsx`;
 
+  // === BACKUP OLD FILE FIRST ===
+  if (fileSHA) {
+    const backupFilePath = `${BACKUP_PATH}annotations_${code}_backup_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`;
+    const backupPayload = {
+      message: `Backup before update (${userLanguage})`,
+      content: xlsxBase64,
+      branch: "main"
+    };
+    await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${backupFilePath}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": `token ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(backupPayload)
+    });
+    console.log(`🧾 Backup saved as ${backupFilePath}`);
+  }
+
+  // === NOW UPDATE MAIN FILE ===
   const payload = {
     message: `Update ${filePath} (${userLanguage})`,
     content: xlsxBase64,
@@ -233,7 +266,7 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   if (resp.ok) {
     const json = await resp.json();
     fileSHA = json.content.sha;
-    alert(`✅ Annotations updated successfully for ${userLanguage}.`);
+    alert(`✅ Annotations updated successfully for ${userLanguage}.\n(Backup also created.)`);
   } else {
     const err = await resp.text();
     alert("❌ GitHub update failed:\n" + err);
@@ -248,7 +281,6 @@ document.getElementById("prevBtn").addEventListener("click", () => {
     buildTable(data);
   }
 });
-
 document.getElementById("nextBtn").addEventListener("click", () => {
   const data = loadProgress();
   const totalPages = Math.ceil(data.length / pageSize);
