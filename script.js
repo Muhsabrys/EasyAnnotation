@@ -1,9 +1,8 @@
 /***************************************************
- * EASYANNOTATION NLI TOOL – FINAL VERSION (Updated)
+ * EASYANNOTATION NLI TOOL – PERSISTENT FILE VERSION
  * Repo: Muhsabrys/EasyAnnotation
- * Adds Hindi, Thai, Urdu
- * Corrects Premise → Hypothesis order
- * Saves language-based annotation CSVs to /Annotations/
+ * Each language has one annotation file on GitHub.
+ * Annotators can recall and update the same file.
  ***************************************************/
 
 // ====== LANGUAGE ACCESS CONTROL ======
@@ -30,6 +29,7 @@ const langCodeMap = {
 };
 
 let userLanguage = null;
+let fileSHA = null; // needed for GitHub updates
 
 function requestLanguageAccess() {
   const entered = prompt("Enter your language access code:");
@@ -46,13 +46,13 @@ function requestLanguageAccess() {
 }
 
 // ====== GLOBAL VARIABLES ======
-const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NonSense"];
+const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NoneSense"];
 let currentPage = 0;
 const pageSize = 150;
 
 const GITHUB_REPO = "Muhsabrys/EasyAnnotation";
-const BASE_DATA_PATH = "datasets/NLI/";
-const OUTPUT_FOLDER = "Annotations/";
+const DATA_PATH = "datasets/NLI/";
+const ANNO_PATH = "Annotations/";
 
 // ====== LOCAL STORAGE HELPERS ======
 function saveProgress(data) {
@@ -64,32 +64,36 @@ function loadProgress() {
   return saved ? JSON.parse(saved) : null;
 }
 
-// ====== FILE URL BUILDER ======
-function getFileURLForLanguage(lang) {
-  const code = langCodeMap[lang];
-  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}NLI_${code}.xlsx`;
-}
-
 // ====== TEXT DIRECTION HANDLER ======
 function getTextDirection() {
-  // Arabic and Urdu are RTL languages
   if (userLanguage === "Arabic" || userLanguage === "Urdu") return "rtl";
   return "ltr";
+}
+
+// ====== FILE HELPERS ======
+function getDataFileURL() {
+  const code = langCodeMap[userLanguage];
+  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${DATA_PATH}NLI_${code}.xlsx`;
+}
+
+function getAnnotationFileURL() {
+  const code = langCodeMap[userLanguage];
+  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${ANNO_PATH}annotations_${code}.csv`;
 }
 
 // ====== TABLE BUILDER ======
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
   let html = `<table>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Premise</th>
-      <th>Hypothesis</th>
-      <th>Relation</th>
-    </tr>
-  </thead>
-  <tbody>`;
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Premise</th>
+        <th>Hypothesis</th>
+        <th>Relation</th>
+      </tr>
+    </thead>
+    <tbody>`;
 
   const start = currentPage * pageSize;
   const end = Math.min(data.length, start + pageSize);
@@ -97,14 +101,14 @@ function buildTable(data) {
   for (let i = start; i < end; i++) {
     const row = data[i];
     html += `<tr>
-              <td>${row.id}</td>
-              <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
-                ${row.premise}
-              </td>
-              <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
-                ${row.hypothesis}
-              </td>
-              <td><div class="radio-group">`;
+      <td>${row.id}</td>
+      <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
+        ${row.premise}
+      </td>
+      <td style="direction:${getTextDirection()}; text-align:${getTextDirection() === 'rtl' ? 'right' : 'left'};">
+        ${row.hypothesis}
+      </td>
+      <td><div class="radio-group">`;
     annotationOptions.forEach(opt => {
       const checked = row.relation === opt ? "checked" : "";
       html += `<label><input type="radio" name="rel${i}" value="${opt}" ${checked}> ${opt}</label>`;
@@ -134,72 +138,63 @@ function attachListeners(data, start, end) {
 
 function updatePagination(data) {
   const totalPages = Math.ceil(data.length / pageSize);
-  const pagCont = document.getElementById("paginationContainer");
-  pagCont.style.display = data.length > pageSize ? "block" : "none";
   document.getElementById("pageIndicator").textContent = `Page ${currentPage + 1} of ${totalPages}`;
   document.getElementById("prevBtn").disabled = currentPage === 0;
   document.getElementById("nextBtn").disabled = currentPage >= totalPages - 1;
 }
 
-// ====== LOAD DATA FROM GITHUB ======
-function loadFromGitHub() {
+// ====== LOAD FROM GITHUB ======
+async function loadFromGitHub() {
   if (!userLanguage) {
     alert("Please enter a valid access code first.");
     return;
   }
-  const fileURL = getFileURLForLanguage(userLanguage);
-  fetch(fileURL)
-    .then(res => res.arrayBuffer())
-    .then(buffer => {
+
+  const code = langCodeMap[userLanguage];
+  const annotationFileURL = `https://api.github.com/repos/${GITHUB_REPO}/contents/${ANNO_PATH}annotations_${code}.csv`;
+
+  try {
+    const response = await fetch(annotationFileURL);
+    if (response.ok) {
+      // File exists → load it
+      const json = await response.json();
+      fileSHA = json.sha; // store for updates
+      const csvText = atob(json.content);
+      const rows = csvText.split("\n").slice(1).filter(Boolean).map(line => {
+        const [id, hyp, prem, rel] = line.split(",").map(v => v.replace(/^"|"$/g, ""));
+        return { id, hypothesis: hyp, premise: prem, relation: rel || "NoneSense" };
+      });
+      saveProgress(rows);
+      buildTable(rows);
+      alert("✅ Loaded existing annotation file from GitHub.");
+    } else {
+      // File doesn't exist → load dataset instead
+      const datasetURL = getDataFileURL();
+      const res = await fetch(datasetURL);
+      const buffer = await res.arrayBuffer();
       const wb = XLSX.read(buffer, { type: "array" });
       const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-      const headers = rows[0].map(h => h.toLowerCase());
+      const raw = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      const headers = raw[0].map(h => h.toLowerCase());
       const idIdx = headers.indexOf("id");
       const hypIdx = headers.indexOf("hypothesis");
       const premIdx = headers.indexOf("premise");
-
-      if (hypIdx === -1 || premIdx === -1) {
-        alert("Missing 'Hypothesis' or 'Premise' columns");
-        return;
-      }
-
-      const data = rows.slice(1).map(r => ({
+      const data = raw.slice(1).map(r => ({
         id: idIdx !== -1 ? r[idIdx] || "" : "",
         hypothesis: r[hypIdx] || "",
         premise: r[premIdx] || "",
-        relation: "NonSense"
+        relation: "NoneSense"
       }));
-
       saveProgress(data);
-      currentPage = 0;
       buildTable(data);
-    })
-    .catch(err => alert("Error loading file: " + err));
+      alert("📄 No existing annotations found. Loaded fresh dataset.");
+    }
+  } catch (err) {
+    alert("❌ Error loading data: " + err);
+  }
 }
 
-// ====== DOWNLOAD CSV LOCALLY ======
-document.getElementById("downloadBtn").addEventListener("click", () => {
-  const data = loadProgress();
-  if (!data) return alert("No data available.");
-
-  let csv = "id,hypothesis,premise,relation\n";
-  data.forEach(r => {
-    csv += `"${r.id}","${r.hypothesis}","${r.premise}","${r.relation}"\n`;
-  });
-
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const code = langCodeMap[userLanguage];
-  const filename = `annotations_${code}_${timestamp}.csv`;
-
-  const link = document.createElement("a");
-  link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
-  link.download = filename;
-  link.click();
-});
-
-// ====== SAVE TO GITHUB (New File Each Time) ======
+// ====== SAVE (UPDATE) TO GITHUB ======
 document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const token = document.getElementById("githubToken").value.trim();
   if (!token) return alert("Please enter your GitHub token.");
@@ -212,10 +207,16 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
     csv += `"${r.id}","${r.hypothesis}","${r.premise}","${r.relation}"\n`;
   });
 
-  const content = btoa(unescape(encodeURIComponent(csv))); // base64 encode
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const content = btoa(unescape(encodeURIComponent(csv)));
   const code = langCodeMap[userLanguage];
-  const filePath = `${OUTPUT_FOLDER}annotations_${code}_${timestamp}.csv`;
+  const filePath = `${ANNO_PATH}annotations_${code}.csv`;
+
+  const payload = {
+    message: `Update ${filePath} (${userLanguage})`,
+    content: content,
+    branch: "main"
+  };
+  if (fileSHA) payload.sha = fileSHA; // add SHA for update
 
   const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`, {
     method: "PUT",
@@ -223,15 +224,13 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
       "Authorization": `token ${token}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      message: `New annotation upload (${userLanguage}) at ${timestamp}`,
-      content: content,
-      branch: "main"
-    })
+    body: JSON.stringify(payload)
   });
 
   if (resp.ok) {
-    alert(`✅ Uploaded successfully to GitHub as ${filePath}`);
+    const json = await resp.json();
+    fileSHA = json.content.sha;
+    alert(`✅ Annotations updated for ${userLanguage}.`);
   } else {
     const err = await resp.text();
     alert("❌ Error saving to GitHub:\n" + err);
