@@ -29,12 +29,12 @@
 <body>
 
 <h2>NLI Annotation Interface</h2>
-<p>Annotations will load automatically from your GitHub file.</p>
+<p id="statusMsg">Please enter your access code to begin.</p>
 
-<button id="loadBtn">Load Data from GitHub</button>
+<button id="loadBtn" style="display:none;">Load Data from GitHub</button>
 <button id="downloadBtn" style="display:none;">Download XLSX</button>
 <button id="saveGithubBtn" style="display:none;">Save to GitHub</button>
-<input type="password" id="githubToken" placeholder="GitHub Token" style="display:block;margin-top:10px;width:300px;">
+<input type="password" id="githubToken" placeholder="GitHub Token" style="display:none;margin-top:10px;width:300px;">
 
 <div id="tableContainer"></div>
 
@@ -46,7 +46,13 @@
 
 <script>
 /***************************************************
- * EASYANNOTATION NLI TOOL – FINAL XLSX VERSION
+ * EASYANNOTATION NLI TOOL – FINAL SHA-SAFE VERSION
+ * Author: Muhammad S. Abdo
+ * Repo: Muhsabrys/EasyAnnotation
+ * Features:
+ *  • XLSX-only annotations
+ *  • Secure SHA-based GitHub updates
+ *  • Smart recall (annotation_DE.xlsx first, else NLI_DE.xlsx)
  ***************************************************/
 
 // ====== LANGUAGE ACCESS CONTROL ======
@@ -74,21 +80,6 @@ const langCodeMap = {
 
 let userLanguage = null;
 
-// ====== LANGUAGE ACCESS PROMPT ======
-function requestLanguageAccess() {
-  const entered = prompt("Enter your language access code:");
-  if (!entered || !validCodes[entered.trim()]) {
-    alert("❌ Invalid code. Please contact the project admin.");
-    document.body.innerHTML = "<h2>Access denied.</h2>";
-    throw new Error("Unauthorized");
-  } else {
-    userLanguage = validCodes[entered.trim()];
-    localStorage.setItem("AnnotatorLanguage", userLanguage);
-    document.title = `NLI Annotation – ${userLanguage}`;
-    alert(`✅ Access granted for ${userLanguage} annotators.`);
-  }
-}
-
 // ====== GLOBAL VARIABLES ======
 const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NonSense"];
 let currentPage = 0;
@@ -107,7 +98,7 @@ function loadProgress() {
   return saved ? JSON.parse(saved) : null;
 }
 
-// ====== TABLE BUILDER ======
+// ====== BUILD TABLE ======
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
   let html = `<table><thead><tr>
@@ -139,6 +130,7 @@ function buildTable(data) {
   updatePagination(data);
   document.getElementById("downloadBtn").style.display = "block";
   document.getElementById("saveGithubBtn").style.display = "block";
+  document.getElementById("githubToken").style.display = "block";
 }
 
 function attachListeners(data, start, end) {
@@ -162,7 +154,7 @@ function updatePagination(data) {
   document.getElementById("nextBtn").disabled = currentPage >= totalPages - 1;
 }
 
-// ====== LOAD DATA (SMART FALLBACK) ======
+// ====== SMART FILE LOAD ======
 async function loadFromGitHub() {
   if (!userLanguage) {
     alert("Please enter your access code first.");
@@ -170,29 +162,25 @@ async function loadFromGitHub() {
   }
 
   const code = langCodeMap[userLanguage];
-  const mainFileURL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${OUTPUT_FOLDER}annotations_${code}.xlsx`;
-  const fallbackURL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}NLI_${code}.xlsx`;
+  const annotationFile = `${OUTPUT_FOLDER}annotations_${code}.xlsx`;
+  const baseFile = `${BASE_DATA_PATH}NLI_${code}.xlsx`;
 
-  async function tryLoad(url) {
-    const res = await fetch(url);
+  async function tryLoad(path) {
+    const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_REPO}/main/${path}`);
     if (!res.ok) return null;
-    const buffer = await res.arrayBuffer();
-    const wb = XLSX.read(buffer, { type: "array" });
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array" });
     const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    return rows;
+    return XLSX.utils.sheet_to_json(sheet, { header: 1 });
   }
 
-  let rows = await tryLoad(mainFileURL);
+  let rows = await tryLoad(annotationFile);
   if (!rows) {
-    alert(`⚠️ No saved annotations found for ${userLanguage}. Loading original dataset instead.`);
-    rows = await tryLoad(fallbackURL);
-    if (!rows) {
-      alert("❌ Could not load either annotations or dataset file.");
-      return;
-    }
+    alert(`⚠️ No saved annotations found for ${userLanguage}. Loading original dataset.`);
+    rows = await tryLoad(baseFile);
+    if (!rows) return alert("❌ Failed to load dataset.");
   } else {
-    alert(`✅ Loaded saved annotations for ${userLanguage}.`);
+    alert(`✅ Loaded annotations for ${userLanguage}.`);
   }
 
   const headers = rows[0].map(h => h.toLowerCase());
@@ -213,7 +201,17 @@ async function loadFromGitHub() {
   buildTable(data);
 }
 
-// ====== SAVE TO GITHUB ======
+// ====== GET FILE SHA ======
+async function getFileSHA(path, token) {
+  const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`, {
+    headers: { "Authorization": `token ${token}` }
+  });
+  if (!res.ok) return null;
+  const meta = await res.json();
+  return meta.sha;
+}
+
+// ====== SAVE TO GITHUB (SHA-SAFE) ======
 document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const token = document.getElementById("githubToken").value.trim();
   if (!token) return alert("Please enter your GitHub token.");
@@ -229,36 +227,40 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   XLSX.utils.book_append_sheet(wb, ws, "Annotations");
   const wbout = XLSX.write(wb, { bookType: "xlsx", type: "base64" });
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const code = langCodeMap[userLanguage];
-  const mainFile = `${OUTPUT_FOLDER}annotations_${code}.xlsx`;
-  const backupFile = `${BACKUP_FOLDER}backup_${code}_${timestamp}.xlsx`;
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const mainPath = `${OUTPUT_FOLDER}annotations_${code}.xlsx`;
+  const backupPath = `${BACKUP_FOLDER}backup_${code}_${timestamp}.xlsx`;
 
   async function uploadFile(path, msg) {
+    const sha = await getFileSHA(path, token);
+    const body = {
+      message: msg,
+      content: wbout,
+      branch: "main"
+    };
+    if (sha) body.sha = sha;
+
     const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`, {
       method: "PUT",
       headers: {
         "Authorization": `token ${token}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        message: msg,
-        content: wbout,
-        branch: "main"
-      })
+      body: JSON.stringify(body)
     });
     return resp.ok;
   }
 
-  const okMain = await uploadFile(mainFile, `Update ${userLanguage} annotations`);
-  const okBackup = await uploadFile(backupFile, `Backup ${userLanguage} annotations at ${timestamp}`);
+  const okMain = await uploadFile(mainPath, `Update ${userLanguage} annotations`);
+  const okBackup = await uploadFile(backupPath, `Backup ${userLanguage} annotations`);
 
   if (okMain && okBackup)
-    alert(`✅ Saved main and backup XLSX for ${userLanguage}.`);
-  else alert("❌ Error saving files to GitHub.");
+    alert(`✅ Saved main + backup XLSX for ${userLanguage}.`);
+  else alert("❌ Error saving to GitHub.");
 });
 
-// ====== DOWNLOAD LOCAL XLSX ======
+// ====== LOCAL XLSX DOWNLOAD ======
 document.getElementById("downloadBtn").addEventListener("click", () => {
   const data = loadProgress();
   if (!data) return alert("No data to download.");
@@ -290,9 +292,17 @@ document.getElementById("nextBtn").addEventListener("click", () => {
   }
 });
 
-// ====== PAGE LOAD ======
-document.addEventListener("DOMContentLoaded", () => {
-  requestLanguageAccess();
+// ====== INIT ======
+window.addEventListener("DOMContentLoaded", () => {
+  const entered = prompt("Enter your language access code:");
+  if (!entered || !validCodes[entered.trim()]) {
+    document.body.innerHTML = "<h2>❌ Access Denied: Invalid Code.</h2>";
+    return;
+  }
+  userLanguage = validCodes[entered.trim()];
+  document.title = `NLI Annotation – ${userLanguage}`;
+  document.getElementById("statusMsg").innerText = `✅ Access granted for ${userLanguage}. Click 'Load Data from GitHub' to begin.`;
+  document.getElementById("loadBtn").style.display = "inline-block";
   document.getElementById("loadBtn").addEventListener("click", loadFromGitHub);
 });
 </script>
