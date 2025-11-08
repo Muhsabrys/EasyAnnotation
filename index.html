@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>NLI Annotation Interface</title>
+  <title>Natural Language Inference (NL) Annotation Interface</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>NLI Annotation Interface</h1>
+  <h1>Natural Language Inference (NL) Annotation Interface</h1>
 
   <div id="controls">
     <p>Annotations will load automatically from your GitHub file.</p>
-    <button id="loadBtn">Load Data from GitHub</button>
-    <button id="downloadBtn" style="display:none;">Download CSV</button>
-    <button id="saveGithubBtn" style="display:none;">Save to GitHub</button>
+    <button id="loadBtn">Reload from GitHub</button>
+    <button id="downloadBtn">Download XLSX</button>
+    <button id="saveBtn">Save to GitHub</button>
   </div>
 
   <div id="tableContainer"></div>
@@ -23,12 +23,10 @@
     <button id="nextBtn">Next Page</button>
   </div>
 
-  <div id="tokenContainer">
-    <label for="githubToken">GitHub Token (only needed for saving):</label>
-    <input type="password" id="githubToken" placeholder="Paste your token here">
-  </div>
+  <!-- SheetJS (XLSX Library) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <!-- Your annotation script -->
   <script src="script.js"></script>
 </body>
 </html>
