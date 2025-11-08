@@ -75,18 +75,23 @@ function loadProgress() {
 
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
+
   const rtlLangs = ["Arabic", "Urdu"];
   const isRTL = rtlLangs.includes(userLanguage);
   const dir = isRTL ? "rtl" : "ltr";
   const align = isRTL ? "right" : "left";
 
-  // Dynamic headers
-  const headers = isRTL
-    ? "<th>ID</th><th>Hypothesis</th><th>Premise</th><th>Relation</th>"
-    : "<th>ID</th><th>Premise</th><th>Hypothesis</th><th>Relation</th>";
-
+  // Note: We ALWAYS read Premise first, Hypothesis second (per your CSV structure)
   let html = `<table dir="${dir}" style="text-align:${align}; width:100%;">
-    <thead><tr>${headers}</tr></thead>
+    <thead>
+      <tr>
+        <th>ID</th>
+        ${isRTL 
+          ? "<th>Hypothesis</th><th>Premise</th>" 
+          : "<th>Premise</th><th>Hypothesis</th>"}
+        <th>Relation</th>
+      </tr>
+    </thead>
     <tbody>`;
 
   const start = currentPage * pageSize;
@@ -98,17 +103,19 @@ function buildTable(data) {
     html += "<tr>";
 
     if (isRTL) {
-      // Arabic/Urdu layout: Hypothesis → Premise
+      // VISUAL flip only (Arabic/Urdu)
       html += `
         <td>${row.id || ""}</td>
-        <td>${row.hypothesis || ""}</td>
-        <td>${row.premise || ""}</td>`;
+        <td>${row.hypothesis || ""}</td>  <!-- display first -->
+        <td>${row.premise || ""}</td>     <!-- display second -->
+      `;
     } else {
-      // Default layout: Premise → Hypothesis
+      // Normal display for LTR
       html += `
         <td>${row.id || ""}</td>
         <td>${row.premise || ""}</td>
-        <td>${row.hypothesis || ""}</td>`;
+        <td>${row.hypothesis || ""}</td>
+      `;
     }
 
     html += `<td><div class="radio-group">`;
@@ -127,6 +134,7 @@ function buildTable(data) {
   document.getElementById("downloadBtn").style.display = "block";
   document.getElementById("saveGithubBtn").style.display = "block";
 }
+
 
 
 function attachListeners(data, start, end) {
