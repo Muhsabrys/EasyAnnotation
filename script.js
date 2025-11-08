@@ -1,8 +1,8 @@
 /***************************************************
- * EASYANNOTATION NLI TOOL – FINAL CONSISTENT VERSION
+ * EASYANNOTATION NLI TOOL – CLEAN, STABLE, XLSX-ONLY
  * Repo: Muhsabrys/EasyAnnotation
- * One file per language (XLSX), backups in /Backups/
- * Always saves as ID | Premise | Hypothesis | Relation
+ * Always saves and loads XLSX with columns:
+ * ID | Premise | Hypothesis | Relation
  ***************************************************/
 
 // ====== LANGUAGE ACCESS CONTROL ======
@@ -67,25 +67,18 @@ function loadProgress() {
 // ====== FILE URL BUILDER ======
 function getFileURLForLanguage(lang) {
   const code = langCodeMap[lang];
-  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}NLI_${code}.xlsx`;
+  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${OUTPUT_FOLDER}annotations_${code}.xlsx`;
 }
 
 // ====== TABLE BUILDER ======
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
-
-  const rtlLangs = ["Arabic", "Urdu"];
-  const isRTL = rtlLangs.includes(userLanguage);
-  const dir = isRTL ? "rtl" : "ltr";
-  const align = isRTL ? "right" : "left";
-
-  let html = `<table dir="${dir}" style="text-align:${align}; width:100%;">
+  let html = `<table style="width:100%; text-align:left;">
     <thead>
       <tr>
         <th>ID</th>
-        ${isRTL 
-          ? "<th>Hypothesis</th><th>Premise</th>" 
-          : "<th>Premise</th><th>Hypothesis</th>"}
+        <th>Premise</th>
+        <th>Hypothesis</th>
         <th>Relation</th>
       </tr>
     </thead>
@@ -96,28 +89,19 @@ function buildTable(data) {
 
   for (let i = start; i < end; i++) {
     const row = data[i];
-    html += "<tr>";
-
-    if (isRTL) {
-      // VISUAL flip only
-      html += `
-        <td>${row.id || ""}</td>
-        <td>${row.hypothesis || ""}</td>
-        <td>${row.premise || ""}</td>
-      `;
-    } else {
-      html += `
+    html += `
+      <tr>
         <td>${row.id || ""}</td>
         <td>${row.premise || ""}</td>
         <td>${row.hypothesis || ""}</td>
-      `;
-    }
+        <td>
+          <div class="radio-group">`;
 
-    html += `<td><div class="radio-group">`;
     annotationOptions.forEach(opt => {
       const checked = row.relation === opt ? "checked" : "";
       html += `<label><input type="radio" name="rel${i}" value="${opt}" ${checked}> ${opt}</label>`;
     });
+
     html += `</div></td></tr>`;
   }
 
@@ -125,7 +109,6 @@ function buildTable(data) {
   tableContainer.innerHTML = html;
   attachListeners(data, start, end);
   updatePagination(data);
-  document.getElementById("downloadBtn").style.display = "block";
   document.getElementById("saveGithubBtn").style.display = "block";
 }
 
@@ -150,15 +133,19 @@ function updatePagination(data) {
   document.getElementById("nextBtn").disabled = currentPage >= totalPages - 1;
 }
 
-// ====== LOAD DATA FROM GITHUB ======
+// ====== LOAD DATA FROM GITHUB (ANNOTATION FILE) ======
 function loadFromGitHub() {
   if (!userLanguage) {
-    alert("Please enter a valid access code first.");
+    alert("Please enter your access code first.");
     return;
   }
+
   const fileURL = getFileURLForLanguage(userLanguage);
   fetch(fileURL)
-    .then(res => res.arrayBuffer())
+    .then(res => {
+      if (!res.ok) throw new Error("File not found or access issue.");
+      return res.arrayBuffer();
+    })
     .then(buffer => {
       const wb = XLSX.read(buffer, { type: "array" });
       const sheet = wb.Sheets[wb.SheetNames[0]];
@@ -168,27 +155,28 @@ function loadFromGitHub() {
       const idIdx = headers.indexOf("id");
       const premIdx = headers.indexOf("premise");
       const hypIdx = headers.indexOf("hypothesis");
+      const relIdx = headers.indexOf("relation");
 
       if (premIdx === -1 || hypIdx === -1) {
-        alert("Missing 'Premise' or 'Hypothesis' columns");
+        alert("❌ Missing 'Premise' or 'Hypothesis' columns.");
         return;
       }
 
       const data = rows.slice(1).map(r => ({
-        id: idIdx !== -1 ? r[idIdx] || "" : "",
+        id: r[idIdx] || "",
         premise: r[premIdx] || "",
         hypothesis: r[hypIdx] || "",
-        relation: "NonSense"
+        relation: relIdx !== -1 ? (r[relIdx] || "NonSense") : "NonSense"
       }));
 
       saveProgress(data);
       currentPage = 0;
       buildTable(data);
     })
-    .catch(err => alert("Error loading file: " + err));
+    .catch(err => alert("⚠️ Error loading data: " + err.message));
 }
 
-// ====== SAVE XLSX TO GITHUB (ONE FILE + BACKUP) ======
+// ====== SAVE XLSX TO GITHUB (UPDATE SAME FILE + BACKUP) ======
 document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const token = document.getElementById("githubToken").value.trim();
   if (!token) return alert("Please enter your GitHub token.");
@@ -196,7 +184,6 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const data = loadProgress();
   if (!data) return alert("No data to upload.");
 
-  // Create worksheet: ID | Premise | Hypothesis | Relation
   const worksheetData = [
     ["ID", "Premise", "Hypothesis", "Relation"],
     ...data.map(r => [r.id, r.premise, r.hypothesis, r.relation])
@@ -232,7 +219,7 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const okBackup = await uploadFile(backupFile, `Backup ${userLanguage} annotations at ${timestamp}`);
 
   if (okMain && okBackup)
-    alert(`✅ Saved main and backup XLSX files for ${userLanguage}.`);
+    alert(`✅ Saved main and backup XLSX for ${userLanguage}.`);
   else alert("❌ Error saving files to GitHub.");
 });
 
