@@ -1,8 +1,8 @@
 /***************************************************
- * EASYANNOTATION NLI TOOL – FINAL XLSX VERSION
+ * EASYANNOTATION NLI TOOL – FINAL CONSISTENT VERSION
  * Repo: Muhsabrys/EasyAnnotation
- * Each language has one persistent .xlsx file on GitHub.
- * Automatically creates backups in /Annotations/backups/.
+ * One file per language (XLSX), backups in /Backups/
+ * Always saves as ID | Premise | Hypothesis | Relation
  ***************************************************/
 
 // ====== LANGUAGE ACCESS CONTROL ======
@@ -29,9 +29,8 @@ const langCodeMap = {
 };
 
 let userLanguage = null;
-let fileSHA = null;
 
-// ====== REQUEST ACCESS ======
+// ====== LANGUAGE ACCESS PROMPT ======
 function requestLanguageAccess() {
   const entered = prompt("Enter your language access code:");
   if (!entered || !validCodes[entered.trim()]) {
@@ -50,29 +49,28 @@ function requestLanguageAccess() {
 const annotationOptions = ["Entailment", "Contradiction", "Neutral", "NoneSense"];
 let currentPage = 0;
 const pageSize = 150;
-
 const GITHUB_REPO = "Muhsabrys/EasyAnnotation";
-const DATA_PATH = "datasets/NLI/";
-const ANNO_PATH = "Annotations/";
-const BACKUP_PATH = "Annotations/backups/";
+const BASE_DATA_PATH = "datasets/NLI/";
+const OUTPUT_FOLDER = "Annotations/";
+const BACKUP_FOLDER = "Backups/";
 
-// ====== TEXT DIRECTION HANDLER ======
-function getTextDirection() {
-  if (["Arabic", "Urdu"].includes(userLanguage)) return "rtl";
-  return "ltr";
-}
-
-// ====== LOCAL STORAGE ======
+// ====== LOCAL STORAGE HELPERS ======
 function saveProgress(data) {
   localStorage.setItem("Data", JSON.stringify(data));
 }
+
 function loadProgress() {
   const saved = localStorage.getItem("Data");
   return saved ? JSON.parse(saved) : null;
 }
 
-// ====== TABLE BUILDER ======
+// ====== FILE URL BUILDER ======
+function getFileURLForLanguage(lang) {
+  const code = langCodeMap[lang];
+  return `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${BASE_DATA_PATH}NLI_${code}.xlsx`;
+}
 
+// ====== TABLE BUILDER ======
 function buildTable(data) {
   const tableContainer = document.getElementById("tableContainer");
 
@@ -81,7 +79,6 @@ function buildTable(data) {
   const dir = isRTL ? "rtl" : "ltr";
   const align = isRTL ? "right" : "left";
 
-  // Note: We ALWAYS read Premise first, Hypothesis second (per your CSV structure)
   let html = `<table dir="${dir}" style="text-align:${align}; width:100%;">
     <thead>
       <tr>
@@ -99,18 +96,16 @@ function buildTable(data) {
 
   for (let i = start; i < end; i++) {
     const row = data[i];
-
     html += "<tr>";
 
     if (isRTL) {
-      // VISUAL flip only (Arabic/Urdu)
+      // VISUAL flip only
       html += `
         <td>${row.id || ""}</td>
-        <td>${row.hypothesis || ""}</td>  <!-- display first -->
-        <td>${row.premise || ""}</td>     <!-- display second -->
+        <td>${row.hypothesis || ""}</td>
+        <td>${row.premise || ""}</td>
       `;
     } else {
-      // Normal display for LTR
       html += `
         <td>${row.id || ""}</td>
         <td>${row.premise || ""}</td>
@@ -128,14 +123,11 @@ function buildTable(data) {
 
   html += `</tbody></table>`;
   tableContainer.innerHTML = html;
-
   attachListeners(data, start, end);
   updatePagination(data);
   document.getElementById("downloadBtn").style.display = "block";
   document.getElementById("saveGithubBtn").style.display = "block";
 }
-
-
 
 function attachListeners(data, start, end) {
   for (let i = start; i < end; i++) {
@@ -151,79 +143,52 @@ function attachListeners(data, start, end) {
 
 function updatePagination(data) {
   const totalPages = Math.ceil(data.length / pageSize);
+  const pagCont = document.getElementById("paginationContainer");
+  pagCont.style.display = data.length > pageSize ? "block" : "none";
   document.getElementById("pageIndicator").textContent = `Page ${currentPage + 1} of ${totalPages}`;
   document.getElementById("prevBtn").disabled = currentPage === 0;
   document.getElementById("nextBtn").disabled = currentPage >= totalPages - 1;
 }
 
-// ====== HEADER DETECTION ======
-function findHeaderIndices(headers) {
-  headers = headers.map(h => h.trim().toLowerCase());
-  const idIdx = headers.findIndex(h => h.includes("id"));
-  const hypIdx = headers.findIndex(h => h.includes("hypothesis") || h.includes("hypo"));
-  const premIdx = headers.findIndex(h => h.includes("premise") || h.includes("prem"));
-  return { idIdx, hypIdx, premIdx };
-}
-
-// ====== LOAD DATA ======
-async function loadFromGitHub() {
+// ====== LOAD DATA FROM GITHUB ======
+function loadFromGitHub() {
   if (!userLanguage) {
-    alert("Please enter your access code first.");
+    alert("Please enter a valid access code first.");
     return;
   }
-
-  const code = langCodeMap[userLanguage];
-  const annoFileURL = `https://api.github.com/repos/${GITHUB_REPO}/contents/${ANNO_PATH}annotations_${code}.xlsx`;
-
-  try {
-    const resp = await fetch(annoFileURL);
-    if (resp.ok) {
-      const json = await resp.json();
-      fileSHA = json.sha;
-      const binary = atob(json.content);
-      const buffer = new ArrayBuffer(binary.length);
-      const view = new Uint8Array(buffer);
-      for (let i = 0; i < binary.length; i++) view[i] = binary.charCodeAt(i);
-
+  const fileURL = getFileURLForLanguage(userLanguage);
+  fetch(fileURL)
+    .then(res => res.arrayBuffer())
+    .then(buffer => {
       const wb = XLSX.read(buffer, { type: "array" });
       const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet);
-      saveProgress(rows);
-      buildTable(rows);
-      alert("✅ Loaded existing annotations from GitHub.");
-    } else {
-      // load base dataset
-      const datasetURL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${DATA_PATH}NLI_${code}.xlsx`;
-      const res = await fetch(datasetURL);
-      const buffer = await res.arrayBuffer();
-      const wb = XLSX.read(buffer, { type: "array" });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-      const headers = raw[0];
-      const { idIdx, hypIdx, premIdx } = findHeaderIndices(headers);
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      if (idIdx === -1 || hypIdx === -1 || premIdx === -1) {
-        alert("⚠️ Header mismatch: expected columns like ID, Hypothesis, Premise.");
-        console.log("Detected headers:", headers);
+      const headers = rows[0].map(h => h.toLowerCase());
+      const idIdx = headers.indexOf("id");
+      const premIdx = headers.indexOf("premise");
+      const hypIdx = headers.indexOf("hypothesis");
+
+      if (premIdx === -1 || hypIdx === -1) {
+        alert("Missing 'Premise' or 'Hypothesis' columns");
+        return;
       }
 
-      const data = raw.slice(1).map(r => ({
-        id: r[idIdx] || "",
-        hypothesis: r[hypIdx] || "",
+      const data = rows.slice(1).map(r => ({
+        id: idIdx !== -1 ? r[idIdx] || "" : "",
         premise: r[premIdx] || "",
+        hypothesis: r[hypIdx] || "",
         relation: "NoneSense"
       }));
 
       saveProgress(data);
+      currentPage = 0;
       buildTable(data);
-      alert("📄 Started a new dataset (no prior annotations found).");
-    }
-  } catch (err) {
-    alert("❌ Error loading file: " + err);
-  }
+    })
+    .catch(err => alert("Error loading file: " + err));
 }
 
-// ====== SAVE TO GITHUB (with Backup) ======
+// ====== SAVE XLSX TO GITHUB (ONE FILE + BACKUP) ======
 document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const token = document.getElementById("githubToken").value.trim();
   if (!token) return alert("Please enter your GitHub token.");
@@ -231,58 +196,44 @@ document.getElementById("saveGithubBtn").addEventListener("click", async () => {
   const data = loadProgress();
   if (!data) return alert("No data to upload.");
 
-  const ws = XLSX.utils.json_to_sheet(data);
+  // Create worksheet: ID | Premise | Hypothesis | Relation
+  const worksheetData = [
+    ["ID", "Premise", "Hypothesis", "Relation"],
+    ...data.map(r => [r.id, r.premise, r.hypothesis, r.relation])
+  ];
+
   const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(worksheetData);
   XLSX.utils.book_append_sheet(wb, ws, "Annotations");
-  const xlsxBase64 = XLSX.write(wb, { bookType: "xlsx", type: "base64" });
 
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "base64" });
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const code = langCodeMap[userLanguage];
-  const filePath = `${ANNO_PATH}annotations_${code}.xlsx`;
+  const mainFile = `${OUTPUT_FOLDER}annotations_${code}.xlsx`;
+  const backupFile = `${BACKUP_FOLDER}backup_${code}_${timestamp}.xlsx`;
 
-  // === BACKUP OLD FILE FIRST ===
-  if (fileSHA) {
-    const backupFilePath = `${BACKUP_PATH}annotations_${code}_backup_${new Date().toISOString().replace(/[:.]/g, "-")}.xlsx`;
-    const backupPayload = {
-      message: `Backup before update (${userLanguage})`,
-      content: xlsxBase64,
-      branch: "main"
-    };
-    await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${backupFilePath}`, {
+  async function uploadFile(path, msg) {
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`, {
       method: "PUT",
       headers: {
         "Authorization": `token ${token}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(backupPayload)
+      body: JSON.stringify({
+        message: msg,
+        content: wbout,
+        branch: "main"
+      })
     });
-    console.log(`🧾 Backup saved as ${backupFilePath}`);
+    return resp.ok;
   }
 
-  // === NOW UPDATE MAIN FILE ===
-  const payload = {
-    message: `Update ${filePath} (${userLanguage})`,
-    content: xlsxBase64,
-    branch: "main"
-  };
-  if (fileSHA) payload.sha = fileSHA;
+  const okMain = await uploadFile(mainFile, `Update ${userLanguage} annotations`);
+  const okBackup = await uploadFile(backupFile, `Backup ${userLanguage} annotations at ${timestamp}`);
 
-  const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`, {
-    method: "PUT",
-    headers: {
-      "Authorization": `token ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (resp.ok) {
-    const json = await resp.json();
-    fileSHA = json.content.sha;
-    alert(`✅ Annotations updated successfully for ${userLanguage}.\n(Backup also created.)`);
-  } else {
-    const err = await resp.text();
-    alert("❌ GitHub update failed:\n" + err);
-  }
+  if (okMain && okBackup)
+    alert(`✅ Saved main and backup XLSX files for ${userLanguage}.`);
+  else alert("❌ Error saving files to GitHub.");
 });
 
 // ====== PAGINATION ======
@@ -293,6 +244,7 @@ document.getElementById("prevBtn").addEventListener("click", () => {
     buildTable(data);
   }
 });
+
 document.getElementById("nextBtn").addEventListener("click", () => {
   const data = loadProgress();
   const totalPages = Math.ceil(data.length / pageSize);
