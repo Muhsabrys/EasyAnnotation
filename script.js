@@ -127,12 +127,20 @@ function renderTable() {
       <td>${row.id}</td>
       <td>${row.premise}</td>
       <td>${row.hypothesis}</td>
-      <td>`;
-    ["Entailment", "Contradiction", "Neutral", "NonSense"].forEach(opt => {
-      const checked = row.relation === opt ? "checked" : "";
-      html += `<label><input type="radio" name="rel${i}" value="${opt}" ${checked}> ${opt}</label> `;
-    });
-    html += `</td></tr>`;
+      <td>
+        <div class="radio-group" style="display:flex;gap:20px;align-items:center;">
+          ${["Entailment", "Contradiction", "Neutral", "NonSense"].map(opt => {
+            const checked = row.relation === opt ? "checked" : "";
+            return `
+              <label style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap;">
+                <input type="radio" name="rel${i}" value="${opt}" ${checked}>
+                <span>${opt}</span>
+              </label>`;
+          }).join("")}
+        </div>
+      </td>
+      </tr>`;
+
   }
 
   html += `</tbody></table>
