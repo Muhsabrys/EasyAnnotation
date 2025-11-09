@@ -1,0 +1,34 @@
+name: Update Progress Report
+
+on:
+  schedule:
+    - cron: "0 6 * * *"  # runs every day at 6 AM UTC
+  workflow_dispatch:     # allow manual trigger
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install xlsx node-fetch@2
+
+      - name: Run progress script
+        run: node scripts/progress_report.js
+
+      - name: Commit and push report
+        run: |
+          git config --global user.name "AnnotationBot"
+          git config --global user.email "annotationbot@users.noreply.github.com"
+          git add Reports/progress.md
+          git commit -m "Auto-update progress report"
+          git push
