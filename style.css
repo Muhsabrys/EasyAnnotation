@@ -4,6 +4,12 @@ body {
   margin: 20px;
   background-color: #f9f9f9;
   color: #222;
+  overscroll-behavior: none;
+}
+
+html {
+  scroll-behavior: auto;
+  overflow-anchor: none; /* Prevents scroll anchoring issues */
 }
 
 h1 {
@@ -67,7 +73,7 @@ tr:nth-child(even) {
   text-align: right;
 }
 
-/* ====== Radio Buttons ====== */
+/* ====== Radio Buttons - Anti-Shake ====== */
 .radio-group {
   display: flex;
   flex-wrap: nowrap;
@@ -76,14 +82,38 @@ tr:nth-child(even) {
 }
 
 .radio-group label {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   margin-right: 15px;
   white-space: nowrap;
   cursor: pointer;
+  user-select: none; /* Prevent text selection on click */
 }
 
 .radio-group input[type="radio"] {
+  margin: 0;
   margin-right: 5px;
+  cursor: pointer;
+  /* Anti-shake CSS properties */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  outline: none !important;
+  /* Prevent layout shift */
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Remove focus outline that can cause visual shake */
+.radio-group input[type="radio"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Prevent label from shifting on interaction */
+.radio-group label:active {
+  transform: none;
 }
 
 /* Optional hover effect for clarity */
@@ -101,19 +131,17 @@ tr:nth-child(even) {
   gap: 15px;
 }
 
-html, body {
-  overscroll-behavior: none;
-  scroll-behavior: auto;
-}
-
-input[type="radio"] {
-  transform: translateZ(0); /* forces GPU compositing */
-  backface-visibility: hidden;
-  outline: none !important;
-}
-
-
 #pageIndicator {
   font-weight: bold;
   color: #444;
+}
+
+/* ====== Additional Stability ====== */
+* {
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+/* Prevent any unwanted layout shifts */
+table, tbody, tr, td {
+  contain: layout; /* CSS containment for stability */
 }
