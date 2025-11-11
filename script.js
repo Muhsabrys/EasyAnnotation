@@ -161,25 +161,33 @@ function bindRadios(start, end) {
   for (let i = start; i < end; i++) {
     const radios = document.getElementsByName("rel" + i);
     radios.forEach(radio => {
-      radio.addEventListener("mousedown", e => e.preventDefault()); // ⛔ stop focus jump
-      radio.addEventListener("click", e => {
-        e.stopPropagation(); // block bubbling
-        const scrollY = window.scrollY; // remember scroll position
+      // Prevent any default focusing behavior that causes shake
+      radio.addEventListener("mousedown", e => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      
+      // Use 'change' event instead of 'click' for cleaner handling
+      radio.addEventListener("change", e => {
+        // Lock scroll position IMMEDIATELY
+        const scrollY = window.scrollY;
         const scrollX = window.scrollX;
-
+        
+        // Update data
         allData[i].relation = radio.value;
-
-        // Save quietly without DOM reflow
+        
+        // Save with debounce
         clearTimeout(saveTimer);
         saveTimer = setTimeout(() => saveLocal(allData), 300);
-
-        // restore scroll position — ensures no shake
-        window.scrollTo(scrollX, scrollY);
+        
+        // Force scroll position to stay locked using requestAnimationFrame
+        requestAnimationFrame(() => {
+          window.scrollTo(scrollX, scrollY);
+        });
       });
     });
   }
 }
-
 
 function bindPagination() {
   const prevBtn = document.getElementById("prevBtn");
@@ -267,6 +275,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Bind buttons if exist
   const loadBtn = document.getElementById("loadBtn");
   const saveBtn = document.getElementById("saveBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
 
   if (loadBtn) loadBtn.onclick = async () => {
     allData = await loadSmart();
