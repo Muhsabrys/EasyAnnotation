@@ -5,11 +5,13 @@ body {
   background-color: #f9f9f9;
   color: #222;
   overscroll-behavior: none;
+  overflow-anchor: none;
 }
 
 html {
   scroll-behavior: auto;
   overflow-anchor: none; /* Prevents scroll anchoring issues */
+  overscroll-behavior: none;
 }
 
 h1 {
@@ -88,39 +90,48 @@ tr:nth-child(even) {
   margin-right: 15px;
   white-space: nowrap;
   cursor: pointer;
-  user-select: none; /* Prevent text selection on click */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  /* Prevent ANY layout shifts */
+  position: relative;
+  will-change: auto;
 }
 
 .radio-group input[type="radio"] {
   margin: 0;
   margin-right: 5px;
   cursor: pointer;
-  /* Anti-shake CSS properties */
+  /* Anti-shake properties */
   transform: translateZ(0);
   backface-visibility: hidden;
   outline: none !important;
-  /* Prevent layout shift */
+  /* Fixed dimensions prevent layout shift */
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+  /* Prevent focus */
+  pointer-events: none;
 }
 
-/* Remove focus outline that can cause visual shake */
-.radio-group input[type="radio"]:focus {
-  outline: none;
-  box-shadow: none;
+/* Remove ALL focus effects */
+.radio-group input[type="radio"]:focus,
+.radio-group input[type="radio"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-/* Prevent label from shifting on interaction */
+/* Prevent label from any transformation */
 .radio-group label:active {
-  transform: none;
+  transform: none !important;
 }
 
-/* Optional hover effect for clarity */
+/* Remove hover effect to prevent any layout changes */
 .radio-group label:hover {
-  background: #f1f1f1;
-  border-radius: 4px;
-  padding: 2px 4px;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
 }
 
 /* ====== Pagination ====== */
