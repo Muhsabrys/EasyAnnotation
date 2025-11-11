@@ -156,16 +156,25 @@ function renderTable() {
 }
 
 function bindRadios(start, end) {
+  let saveTimer = null;
+
   for (let i = start; i < end; i++) {
     const radios = document.getElementsByName("rel" + i);
-    radios.forEach(r => {
-      r.addEventListener("change", () => {
-        allData[i].relation = r.value;
-        saveLocal(allData);
+    radios.forEach(radio => {
+      radio.addEventListener("change", () => {
+        // Update only the relation field (no re-render!)
+        allData[i].relation = radio.value;
+
+        // Throttle saving to avoid multiple writes
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          saveLocal(allData);
+        }, 300); // save 300ms after last change
       });
     });
   }
 }
+
 
 function bindPagination() {
   const prevBtn = document.getElementById("prevBtn");
