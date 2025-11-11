@@ -160,31 +160,59 @@ function bindRadios(start, end) {
 
   for (let i = start; i < end; i++) {
     const radios = document.getElementsByName("rel" + i);
+    
     radios.forEach(radio => {
-      // Prevent any default focusing behavior that causes shake
+      const label = radio.closest('label');
+      
+      // Block ALL default radio behaviors
       radio.addEventListener("mousedown", e => {
         e.preventDefault();
         e.stopPropagation();
-      });
+        return false;
+      }, true);
       
-      // Use 'change' event instead of 'click' for cleaner handling
-      radio.addEventListener("change", e => {
-        // Lock scroll position IMMEDIATELY
-        const scrollY = window.scrollY;
-        const scrollX = window.scrollX;
-        
-        // Update data
-        allData[i].relation = radio.value;
-        
-        // Save with debounce
-        clearTimeout(saveTimer);
-        saveTimer = setTimeout(() => saveLocal(allData), 300);
-        
-        // Force scroll position to stay locked using requestAnimationFrame
-        requestAnimationFrame(() => {
+      radio.addEventListener("click", e => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }, true);
+      
+      radio.addEventListener("focus", e => {
+        e.preventDefault();
+        radio.blur();
+      }, true);
+      
+      // Handle the click on the LABEL instead
+      if (label) {
+        label.addEventListener("click", e => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Lock scroll BEFORE any changes
+          const scrollY = window.scrollY;
+          const scrollX = window.scrollX;
+          
+          // Manually check the radio
+          if (!radio.checked) {
+            // Uncheck all siblings
+            radios.forEach(r => r.checked = false);
+            // Check this one
+            radio.checked = true;
+            
+            // Update data
+            allData[i].relation = radio.value;
+            
+            // Save with debounce
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => saveLocal(allData), 300);
+          }
+          
+          // Force scroll to stay in place
           window.scrollTo(scrollX, scrollY);
-        });
-      });
+          
+          return false;
+        }, true);
+      }
     });
   }
 }
