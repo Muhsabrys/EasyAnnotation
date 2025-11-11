@@ -161,15 +161,20 @@ function bindRadios(start, end) {
   for (let i = start; i < end; i++) {
     const radios = document.getElementsByName("rel" + i);
     radios.forEach(radio => {
-      radio.addEventListener("change", () => {
-        // Update only the relation field (no re-render!)
+      radio.addEventListener("mousedown", e => e.preventDefault()); // ⛔ stop focus jump
+      radio.addEventListener("click", e => {
+        e.stopPropagation(); // block bubbling
+        const scrollY = window.scrollY; // remember scroll position
+        const scrollX = window.scrollX;
+
         allData[i].relation = radio.value;
 
-        // Throttle saving to avoid multiple writes
+        // Save quietly without DOM reflow
         clearTimeout(saveTimer);
-        saveTimer = setTimeout(() => {
-          saveLocal(allData);
-        }, 300); // save 300ms after last change
+        saveTimer = setTimeout(() => saveLocal(allData), 300);
+
+        // restore scroll position — ensures no shake
+        window.scrollTo(scrollX, scrollY);
       });
     });
   }
