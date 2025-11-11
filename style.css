@@ -101,6 +101,11 @@ tr:nth-child(even) {
   gap: 15px;
 }
 
+html, body {
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+}
+
 #pageIndicator {
   font-weight: bold;
   color: #444;
