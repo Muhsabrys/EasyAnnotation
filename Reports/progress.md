@@ -1,12 +1,12 @@
 # 🧮 NLI Annotation Progress Report
 
-Updated: Thu, 13 Nov 2025 15:31:41 GMT
+Updated: Fri, 14 Nov 2025 06:20:21 GMT
 
 | Language | Annotated | Total | Progress |
 |-----------|------------|--------|-----------|
 | German | 990 | 1000 | 99.00% |
 | Arabic | 6 | 1000 | 0.60% |
-| Spanish | 0 | 0 | 0% |
+| Spanish | 4 | 1000 | 0.40% |
 | Portuguese | 0 | 0 | 0% |
 | Chinese | 156 | 1000 | 15.60% |
 | Hindi | 0 | 0 | 0% |
