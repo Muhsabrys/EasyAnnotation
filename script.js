@@ -26,7 +26,8 @@ const validCodes = {
   "ZH-L5-2025-NLI": "Chinese",
   "HI-L6-2025-NLI": "Hindi",
   "TH-L7-2025-NLI": "Thai",
-  "UR-L8-2025-NLI": "Urdu"
+  "UR-L8-2025-NLI": "Urdu",
+  "TR-L9-2025-NLI": "Turkish"
 };
 const langCodeMap = {
   "German": "DE",
@@ -36,7 +37,8 @@ const langCodeMap = {
   "Chinese": "ZH",
   "Hindi": "HI",
   "Thai": "TH",
-  "Urdu": "UR"
+  "Urdu": "UR",
+  "Turkish": "TR"
 };
 
 let userLanguage = null;
