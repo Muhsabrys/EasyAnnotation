@@ -27,7 +27,8 @@ const validCodes = {
   "HI-L6-2025-NLI": "Hindi",
   "TH-L7-2025-NLI": "Thai",
   "UR-L8-2025-NLI": "Urdu",
-  "TR-L9-2025-NLI": "Turkish"
+  "TR-L9-2025-NLI": "Turkish",
+  "CN-L10-2025-NLI": "Cantonese"
 };
 const langCodeMap = {
   "German": "DE",
@@ -38,7 +39,8 @@ const langCodeMap = {
   "Hindi": "HI",
   "Thai": "TH",
   "Urdu": "UR",
-  "Turkish": "TR"
+  "Turkish": "TR",
+  "Cantonese": "CN"
 };
 
 let userLanguage = null;
