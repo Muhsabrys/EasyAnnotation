@@ -20,7 +20,9 @@ const LANGS = {
   ZH: "Chinese",
   HI: "Hindi",
   TH: "Thai",
-  UR: "Urdu"
+  UR: "Urdu",
+  TR: "Turkish",
+  CN: "Cantonese"
 };
 
 async function loadXLSX(url) {
