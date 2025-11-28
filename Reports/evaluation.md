@@ -1,18 +1,18 @@
 # 🧪 Gold Standard Evaluation Report
 
-Updated: Thu, 27 Nov 2025 07:12:51 GMT
+Updated: Fri, 28 Nov 2025 07:12:11 GMT
 
 | Language | Accuracy | Entailment F1 | Contradiction F1 | Neutral F1 | NonSense % |
 |-----------|-----------|----------------|------------------|-------------|-------------|
 | German | 23.43% | 25.9 | 20.2 | 23.2 | 1.0% |
 | Arabic | 19.31% | 11.4 | 2.8 | 33.6 | 85.5% |
-| Spanish | 26.16% | 26.2 | 18.7 | 30.1 | 41.9% |
+| Spanish | 25.56% | 25.2 | 18.3 | 29.9 | 37.0% |
 | Portuguese | ⚠️ Missing file | - | - | - | - |
 | Chinese | 28.11% | 36.0 | 16.8 | 26.1 | 78.3% |
 | Hindi | ⚠️ Missing file | - | - | - | - |
-| Thai | 29.78% | 39.3 | 27.5 | 19.2 | 11.0% |
+| Thai | 29.00% | 37.5 | 27.9 | 18.7 | 3.8% |
 | Urdu | 31.34% | 38.5 | 31.0 | 21.8 | 59.8% |
-| Turkish | ⚠️ Missing file | - | - | - | - |
+| Turkish | 12.50% | 0.0 | 0.0 | 33.3 | 99.2% |
 | Cantonese | 33.81% | 36.6 | 29.7 | 34.2 | 86.1% |
 
-**Overall Accuracy (excluding NonSense):** 27.08%
+**Overall Accuracy (excluding NonSense):** 26.77%
