@@ -1,11 +1,11 @@
 // Minimal chi-square + Cramér’s V helpers
-import { chiSquaredTest } from "simple-statistics";
+import { chiSquare } from "@folge3/chi-square";
 
 export function chiSquareTest(matrixObj) {
   const labels = Object.keys(matrixObj);
   const table = labels.map(r => labels.map(c => matrixObj[r][c] || 0));
-  const { pValue, chiSquared } = chiSquaredTest(table);
-  return { chi2: chiSquared, p: pValue };
+    const result = chiSquare({ rows: labels, columns: labels, data: table }, 0.05);
+    return { chi2: result.statistic, p: result.pValue };
 }
 
 export function cramersV(matrixObj) {
