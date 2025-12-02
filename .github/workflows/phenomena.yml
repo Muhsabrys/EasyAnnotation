@@ -24,7 +24,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm install xlsx papaparse simple-statistics
+          npm install xlsx papapars
 
       - name: Run Phenomenon Analysis
         run: |
