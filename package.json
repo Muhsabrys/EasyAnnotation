@@ -1,0 +1,11 @@
+{
+  "name": "easyannotation",
+  "version": "1.0.0",
+  "description": "Multilingual NLI annotation and analysis toolkit",
+  "type": "module",
+  "dependencies": {
+    "xlsx": "^0.18.5",
+    "papaparse": "^5.4.1",
+    "simple-statistics": "^7.8.0"
+  }
+}
