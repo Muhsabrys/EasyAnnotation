@@ -1,13 +1,12 @@
 /**
- * EASYANNOTATION – INTER-ANNOTATOR AGREEMENT REPORT (CLEAN VERSION)
- * Excludes NonSense and unlabelled rows.
- * Calculates per-item agreement and overall stats + chi-square test.
+ * EASYANNOTATION – INTER-ANNOTATOR AGREEMENT REPORT (PURE JS)
+ * Excludes NonSense and empty rows.
+ * Calculates per-item agreement, overall stats, and chi-square test (no deps).
  */
 
 import fs from "fs";
 import fetch from "node-fetch";
 import * as XLSX from "xlsx";
-import { chiSquaredTest } from "simple-statistics"; // lightweight helper
 
 const GITHUB_REPO = "Muhsabrys/EasyAnnotation";
 const ANNOT_PATH = "Annotations/";
@@ -15,6 +14,7 @@ const REPORT_PATH = "Reports/inter_annotator_agreement.md";
 const LANGS = ["DE","AR","ES","PT","ZH","HI","TH","UR"];
 const VALID_LABELS = ["Entailment", "Contradiction", "Neutral"];
 
+// ---- Helpers ----
 async function fetchXLSX(url) {
   const res = await fetch(url);
   if (!res.ok) return null;
@@ -25,18 +25,44 @@ async function fetchXLSX(url) {
 }
 
 function mostCommon(arr) {
-  if (!arr.length) return null;
+  if (!arr.length) return { label: "-", count: 0 };
   const freq = {};
   arr.forEach(a => freq[a] = (freq[a] || 0) + 1);
   let max = 0, label = null;
-  for (const [k,v] of Object.entries(freq)) if (v>max){ max=v; label=k; }
-  return {label, count:max};
+  for (const [k,v] of Object.entries(freq)) if (v > max){ max=v; label=k; }
+  return { label, count:max };
 }
 
+function chiSquareTest(observed) {
+  const total = observed.reduce((a,b) => a+b, 0);
+  const expected = observed.map(() => total / observed.length);
+  const chi2 = observed.reduce((s,obs,i) => s + Math.pow(obs - expected[i], 2) / expected[i], 0);
+  const df = observed.length - 1;
+
+  // p-value approximation using incomplete gamma function (simplified)
+  function gammaIncomplete(a, x) {
+    let sum = 1 / a, value = 1 / a, n = 1;
+    while (value > sum * 1e-8) {
+      value *= x / (a + n);
+      sum += value;
+      n++;
+    }
+    return sum * Math.exp(-x + a * Math.log(x));
+  }
+
+  function gamma(a) {
+    return Math.sqrt(2 * Math.PI / a) * Math.pow(a / Math.E, a);
+  }
+
+  const p = 1 - gammaIncomplete(df / 2, chi2 / 2) / gamma(df / 2);
+  return { chi2, df, p };
+}
+
+// ---- Main ----
 async function main() {
   const allData = {};
 
-  // ---- Load annotation files
+  // Load all annotation XLSX files
   for (const code of LANGS) {
     const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${ANNOT_PATH}annotations_${code}.xlsx`;
     const rows = await fetchXLSX(url);
@@ -55,7 +81,7 @@ async function main() {
     });
   }
 
-  // ---- Compute per-item agreement
+  // Compute per-item agreement
   let report = `# 🤝 Inter-Annotator Agreement Report (Valid Labels Only)\n\nUpdated: ${new Date().toUTCString()}\n\n`;
   report += `| ID | Entailment | Contradiction | Neutral | Annotators | Agreement % | Dominant Label |\n`;
   report += `|----|-------------|---------------|----------|-------------|--------------|----------------|\n`;
@@ -64,8 +90,10 @@ async function main() {
   const allLabels = [];
 
   for (const [id, labels] of Object.entries(allData)) {
+    if (labels.length === 0) continue;
+
     const counts = {Entailment:0, Contradiction:0, Neutral:0};
-    labels.forEach(l => { if(counts[l]!==undefined) counts[l]++; });
+    labels.forEach(l => counts[l]++);
     const {label, count} = mostCommon(labels);
     const agreePct = (count / labels.length) * 100;
 
@@ -76,21 +104,14 @@ async function main() {
     allLabels.push(...labels);
   }
 
-  const avgAgreement = totalAgree / totalItems;
+  const avgAgreement = totalItems > 0 ? totalAgree / totalItems : 0;
 
-  // ---- Statistical significance test
-  // Expected: uniform distribution across 3 labels
-  const observedCounts = VALID_LABELS.map(lbl => allLabels.filter(x => x === lbl).length);
-  const total = observedCounts.reduce((a,b) => a+b,0);
-  const expected = observedCounts.map(() => total / 3);
-
-  // Simple chi-square (manual since simple-statistics may not be installed)
-  const chi2 = observedCounts.reduce((s,obs,i) => s + Math.pow(obs-expected[i],2)/expected[i], 0);
-  const df = VALID_LABELS.length - 1;
-  const pValue = 1 - Math.exp(-0.5 * chi2); // rough approximation
+  // Chi-square test across all labels
+  const observed = VALID_LABELS.map(lbl => allLabels.filter(x => x === lbl).length);
+  const { chi2, df, p } = chiSquareTest(observed);
 
   report += `\n**Average Agreement:** ${avgAgreement.toFixed(2)}% (${totalItems} items)\n`;
-  report += `**Chi-square test:** χ² = ${chi2.toFixed(2)}, df = ${df}, p ≈ ${pValue.toFixed(4)}\n`;
+  report += `**Chi-square test:** χ² = ${chi2.toFixed(2)}, df = ${df}, p ≈ ${p.toFixed(4)}\n`;
 
   fs.mkdirSync("Reports", { recursive: true });
   fs.writeFileSync(REPORT_PATH, report);
