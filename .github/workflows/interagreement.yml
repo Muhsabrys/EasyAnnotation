@@ -1,0 +1,34 @@
+name: Inter-Annotator Agreement
+
+on:
+  schedule:
+    - cron: "0 8 * * *"   # daily at 8 AM UTC
+  workflow_dispatch:
+
+jobs:
+  interagreement:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install xlsx node-fetch@2
+
+      - name: Run agreement script
+        run: node scripts/inter_annotator_agreement.js
+
+      - name: Commit and push report
+        run: |
+          git config --global user.name "AnnotationAgreementBot"
+          git config --global user.email "annotationbot@users.noreply.github.com"
+          git add Reports/inter_annotator_agreement.md
+          git commit -m "Auto-update inter-annotator agreement report" || echo "No changes"
+          git push
