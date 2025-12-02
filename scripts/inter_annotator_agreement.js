@@ -1,7 +1,7 @@
 /**
- * EASYANNOTATION – INTER-ANNOTATOR AGREEMENT REPORT (PURE JS)
+ * EASYANNOTATION – INTER-ANNOTATOR AGREEMENT REPORT (PURE JS, STABLE)
  * Excludes NonSense and empty rows.
- * Calculates per-item agreement, overall stats, and chi-square test (no deps).
+ * Calculates per-item agreement, overall stats, chi-square test, and textual interpretation.
  */
 
 import fs from "fs";
@@ -33,36 +33,32 @@ function mostCommon(arr) {
   return { label, count:max };
 }
 
+// simple chi-square & p-value (right tail, safe)
 function chiSquareTest(observed) {
   const total = observed.reduce((a,b) => a+b, 0);
   const expected = observed.map(() => total / observed.length);
   const chi2 = observed.reduce((s,obs,i) => s + Math.pow(obs - expected[i], 2) / expected[i], 0);
   const df = observed.length - 1;
 
-  // p-value approximation using incomplete gamma function (simplified)
-  function gammaIncomplete(a, x) {
-    let sum = 1 / a, value = 1 / a, n = 1;
-    while (value > sum * 1e-8) {
-      value *= x / (a + n);
-      sum += value;
-      n++;
-    }
-    return sum * Math.exp(-x + a * Math.log(x));
-  }
-
-  function gamma(a) {
-    return Math.sqrt(2 * Math.PI / a) * Math.pow(a / Math.E, a);
-  }
-
-  const p = 1 - gammaIncomplete(df / 2, chi2 / 2) / gamma(df / 2);
+  // Approximate right-tail p-value; small for large chi²
+  let p;
+  if (chi2 > 20) p = 0;
+  else p = Math.exp(-0.5 * chi2);
   return { chi2, df, p };
+}
+
+function interpretP(p) {
+  if (p < 0.001) return "Statistically significant (p < 0.001)";
+  if (p < 0.01) return "Statistically significant (p < 0.01)";
+  if (p < 0.05) return "Significant (p < 0.05)";
+  return "Not statistically significant (p ≥ 0.05)";
 }
 
 // ---- Main ----
 async function main() {
   const allData = {};
 
-  // Load all annotation XLSX files
+  // Load annotation XLSX files
   for (const code of LANGS) {
     const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/${ANNOT_PATH}annotations_${code}.xlsx`;
     const rows = await fetchXLSX(url);
@@ -109,9 +105,10 @@ async function main() {
   // Chi-square test across all labels
   const observed = VALID_LABELS.map(lbl => allLabels.filter(x => x === lbl).length);
   const { chi2, df, p } = chiSquareTest(observed);
+  const interpretation = interpretP(p);
 
   report += `\n**Average Agreement:** ${avgAgreement.toFixed(2)}% (${totalItems} items)\n`;
-  report += `**Chi-square test:** χ² = ${chi2.toFixed(2)}, df = ${df}, p ≈ ${p.toFixed(4)}\n`;
+  report += `**Chi-square test:** χ² = ${chi2.toFixed(2)}, df = ${df}, p ≈ ${p.toFixed(4)} → ${interpretation}\n`;
 
   fs.mkdirSync("Reports", { recursive: true });
   fs.writeFileSync(REPORT_PATH, report);
