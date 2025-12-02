@@ -1,6 +1,6 @@
 # 🤝 Inter-Annotator Agreement Report (Valid Labels Only)
 
-Updated: Tue, 02 Dec 2025 01:59:24 GMT
+Updated: Tue, 02 Dec 2025 02:03:09 GMT
 
 | ID | Entailment | Contradiction | Neutral | Annotators | Agreement % | Dominant Label |
 |----|-------------|---------------|----------|-------------|--------------|----------------|
@@ -1006,3 +1006,4 @@ Updated: Tue, 02 Dec 2025 01:59:24 GMT
 
 **Average Agreement:** 80.23% (999 items)
 **Chi-square test:** χ² = 135.08, df = 2, p ≈ 0.0000 → Statistically significant (p < 0.001)
+**Fleiss’ κ (Kappa):** 0.444 → Moderate agreement
