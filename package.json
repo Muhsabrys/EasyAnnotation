@@ -1,11 +1,17 @@
 {
   "name": "easyannotation",
   "version": "1.0.0",
-  "description": "Multilingual NLI annotation and analysis toolkit",
+  "description": "Multilingual NLI annotation and reporting toolkit",
+  "main": "index.js",
   "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "report": "node scripts/phenomena_effects.js"
+  },
   "dependencies": {
-  "xlsx": "^0.18.5",
-  "papaparse": "^5.4.1",
-  "@folge3/chi-square": "^1.4.3"
-        
+    "xlsx": "^0.18.5",
+    "papaparse": "^5.4.1",
+    "simple-statistics": "^7.8.0",
+    "node-fetch": "^2.6.12"
+  }
 }
