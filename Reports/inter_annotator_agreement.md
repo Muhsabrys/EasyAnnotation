@@ -1,6 +1,6 @@
 # 🤝 Inter-Annotator Agreement Report (Valid Labels Only)
 
-Updated: Sun, 21 Dec 2025 08:01:17 GMT
+Updated: Mon, 22 Dec 2025 08:01:09 GMT
 
 | ID | Entailment | Contradiction | Neutral | Annotators | Agreement % | Dominant Label |
 |----|-------------|---------------|----------|-------------|--------------|----------------|
