@@ -1,6 +1,6 @@
 # 🤝 Inter-Annotator Agreement Report (Valid Labels Only)
 
-Updated: Mon, 22 Dec 2025 08:01:09 GMT
+Updated: Tue, 23 Dec 2025 08:14:08 GMT
 
 | ID | Entailment | Contradiction | Neutral | Annotators | Agreement % | Dominant Label |
 |----|-------------|---------------|----------|-------------|--------------|----------------|
@@ -309,7 +309,7 @@ Updated: Mon, 22 Dec 2025 08:01:09 GMT
 | ANLI4670 | 0 | 3 | 3 | 6 | 50.0% | Neutral |
 | ANLI4818 | 0 | 2 | 4 | 6 | 66.7% | Neutral |
 | ANLI4956 | 6 | 0 | 0 | 6 | 100.0% | Entailment |
-| ANLI4958 | 5 | 0 | 1 | 6 | 83.3% | Entailment |
+| ANLI4958 | 6 | 0 | 0 | 6 | 100.0% | Entailment |
 | ANLI5001 | 0 | 2 | 3 | 5 | 60.0% | Neutral |
 | ANLI5283 | 1 | 0 | 4 | 5 | 80.0% | Neutral |
 | ANLI5966 | 0 | 0 | 5 | 5 | 100.0% | Neutral |
@@ -348,7 +348,7 @@ Updated: Mon, 22 Dec 2025 08:01:09 GMT
 | ANLI16120 | 0 | 4 | 1 | 5 | 80.0% | Contradiction |
 | ANLI16146 | 5 | 0 | 0 | 5 | 100.0% | Entailment |
 | ANLI16304 | 0 | 4 | 1 | 5 | 80.0% | Contradiction |
-| ANLI16366 | 2 | 3 | 0 | 5 | 60.0% | Contradiction |
+| ANLI16366 | 1 | 4 | 0 | 5 | 80.0% | Contradiction |
 | ANLI16394 | 0 | 5 | 0 | 5 | 100.0% | Contradiction |
 | ANLI16407 | 0 | 3 | 2 | 5 | 60.0% | Contradiction |
 | ANLI16434 | 4 | 0 | 1 | 5 | 80.0% | Entailment |
@@ -363,7 +363,7 @@ Updated: Mon, 22 Dec 2025 08:01:09 GMT
 | ANLI19280 | 2 | 2 | 1 | 5 | 40.0% | Contradiction |
 | ANLI19557 | 3 | 1 | 1 | 5 | 60.0% | Entailment |
 | ANLI19882 | 0 | 3 | 2 | 5 | 60.0% | Contradiction |
-| ANLI20103 | 1 | 4 | 0 | 5 | 80.0% | Contradiction |
+| ANLI20103 | 0 | 5 | 0 | 5 | 100.0% | Contradiction |
 | ANLI20207 | 2 | 0 | 3 | 5 | 60.0% | Neutral |
 | ANLI20349 | 5 | 0 | 0 | 5 | 100.0% | Entailment |
 | ANLI20368 | 5 | 0 | 0 | 5 | 100.0% | Entailment |
@@ -377,7 +377,7 @@ Updated: Mon, 22 Dec 2025 08:01:09 GMT
 | ANLI23465 | 5 | 0 | 0 | 5 | 100.0% | Entailment |
 | ANLI23475 | 3 | 1 | 1 | 5 | 60.0% | Entailment |
 | ANLI23648 | 1 | 3 | 1 | 5 | 60.0% | Contradiction |
-| ANLI23712 | 2 | 1 | 2 | 5 | 40.0% | Neutral |
+| ANLI23712 | 2 | 0 | 3 | 5 | 60.0% | Neutral |
 | ANLI23742 | 2 | 3 | 0 | 5 | 60.0% | Contradiction |
 | ANLI23772 | 0 | 0 | 5 | 5 | 100.0% | Neutral |
 | ANLI23936 | 4 | 1 | 0 | 5 | 80.0% | Entailment |
@@ -1004,6 +1004,6 @@ Updated: Mon, 22 Dec 2025 08:01:09 GMT
 | MNLI24494 | 1 | 0 | 2 | 3 | 66.7% | Neutral |
 | MNLI3932 | 2 | 0 | 1 | 3 | 66.7% | Entailment |
 
-**Average Agreement:** 78.08% (999 items)
-**Chi-square test:** χ² = 155.53, df = 2, p ≈ 0.0000 → Statistically significant (p < 0.001)
-**Fleiss’ κ (Kappa):** 0.451 → Moderate agreement
+**Average Agreement:** 78.16% (999 items)
+**Chi-square test:** χ² = 155.04, df = 2, p ≈ 0.0000 → Statistically significant (p < 0.001)
+**Fleiss’ κ (Kappa):** 0.452 → Moderate agreement
