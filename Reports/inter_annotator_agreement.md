@@ -1,6 +1,6 @@
 # 🤝 Inter-Annotator Agreement Report (Valid Labels Only)
 
-Updated: Tue, 23 Dec 2025 08:14:08 GMT
+Updated: Wed, 24 Dec 2025 08:01:12 GMT
 
 | ID | Entailment | Contradiction | Neutral | Annotators | Agreement % | Dominant Label |
 |----|-------------|---------------|----------|-------------|--------------|----------------|
@@ -455,7 +455,7 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | MNLI1991 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
 | MNLI2126 | 0 | 0 | 4 | 4 | 100.0% | Neutral |
 | MNLI2128 | 0 | 1 | 3 | 4 | 75.0% | Neutral |
-| MNLI2301 | 1 | 3 | 0 | 4 | 75.0% | Contradiction |
+| MNLI2301 | 0 | 4 | 0 | 4 | 100.0% | Contradiction |
 | MNLI2441 | 3 | 0 | 1 | 4 | 75.0% | Entailment |
 | MNLI2727 | 3 | 0 | 1 | 4 | 75.0% | Entailment |
 | MNLI2869 | 1 | 1 | 2 | 4 | 50.0% | Neutral |
@@ -542,7 +542,7 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | WANLI1097 | 0 | 0 | 4 | 4 | 100.0% | Neutral |
 | WANLI1227 | 1 | 0 | 3 | 4 | 75.0% | Neutral |
 | WANLI1900 | 1 | 0 | 3 | 4 | 75.0% | Neutral |
-| WANLI2327 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
+| WANLI2327 | 3 | 0 | 1 | 4 | 75.0% | Entailment |
 | WANLI2588 | 1 | 0 | 3 | 4 | 75.0% | Neutral |
 | WANLI2765 | 0 | 2 | 2 | 4 | 50.0% | Neutral |
 | WANLI2927 | 1 | 1 | 2 | 4 | 50.0% | Neutral |
@@ -558,7 +558,7 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | WANLI4251 | 0 | 0 | 4 | 4 | 100.0% | Neutral |
 | WANLI4303 | 0 | 3 | 1 | 4 | 75.0% | Contradiction |
 | WANLI5017 | 0 | 0 | 4 | 4 | 100.0% | Neutral |
-| WANLI5073 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
+| WANLI5073 | 3 | 0 | 1 | 4 | 75.0% | Entailment |
 | WANLI5118 | 0 | 4 | 0 | 4 | 100.0% | Contradiction |
 | WANLI5325 | 3 | 0 | 1 | 4 | 75.0% | Entailment |
 | WANLI5429 | 0 | 2 | 2 | 4 | 50.0% | Contradiction |
@@ -567,7 +567,7 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | WANLI6056 | 3 | 0 | 1 | 4 | 75.0% | Entailment |
 | WANLI6772 | 1 | 0 | 3 | 4 | 75.0% | Neutral |
 | WANLI6900 | 0 | 1 | 3 | 4 | 75.0% | Neutral |
-| WANLI6954 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
+| WANLI6954 | 3 | 0 | 1 | 4 | 75.0% | Entailment |
 | WANLI7052 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
 | WANLI7096 | 3 | 0 | 1 | 4 | 75.0% | Entailment |
 | WANLI7142 | 1 | 0 | 3 | 4 | 75.0% | Neutral |
@@ -694,7 +694,7 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | Fever1882 | 2 | 0 | 2 | 4 | 50.0% | Entailment |
 | Fever2038 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
 | Fever2178 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
-| Fever2232 | 3 | 1 | 0 | 4 | 75.0% | Entailment |
+| Fever2232 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
 | Fever2426 | 1 | 1 | 2 | 4 | 50.0% | Neutral |
 | Fever2436 | 0 | 4 | 0 | 4 | 100.0% | Contradiction |
 | Fever2454 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
@@ -742,7 +742,7 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | Fever13730 | 0 | 4 | 0 | 4 | 100.0% | Contradiction |
 | Fever13773 | 2 | 2 | 0 | 4 | 50.0% | Entailment |
 | Fever13912 | 0 | 0 | 3 | 3 | 100.0% | Neutral |
-| Fever14142 | 1 | 3 | 0 | 4 | 75.0% | Contradiction |
+| Fever14142 | 0 | 4 | 0 | 4 | 100.0% | Contradiction |
 | Fever14294 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
 | Fever15061 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
 | Fever15372 | 4 | 0 | 0 | 4 | 100.0% | Entailment |
@@ -811,7 +811,7 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | LING1522 | 0 | 2 | 2 | 4 | 50.0% | Neutral |
 | LING1529 | 0 | 0 | 4 | 4 | 100.0% | Neutral |
 | LING1651 | 0 | 2 | 2 | 4 | 50.0% | Neutral |
-| LING1830 | 0 | 4 | 0 | 4 | 100.0% | Contradiction |
+| LING1830 | 0 | 3 | 1 | 4 | 75.0% | Contradiction |
 | LING2125 | 0 | 0 | 4 | 4 | 100.0% | Neutral |
 | LING2223 | 0 | 3 | 1 | 4 | 75.0% | Contradiction |
 | LING2407 | 0 | 0 | 4 | 4 | 100.0% | Neutral |
@@ -837,7 +837,7 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | LING3818 | 1 | 1 | 2 | 4 | 50.0% | Neutral |
 | LING3904 | 0 | 0 | 4 | 4 | 100.0% | Neutral |
 | LING4127 | 0 | 3 | 1 | 4 | 75.0% | Contradiction |
-| LING4236 | 1 | 2 | 1 | 4 | 50.0% | Contradiction |
+| LING4236 | 1 | 1 | 2 | 4 | 50.0% | Neutral |
 | LING4423 | 3 | 0 | 1 | 4 | 75.0% | Entailment |
 | LING4550 | 0 | 4 | 0 | 4 | 100.0% | Contradiction |
 | LING4579 | 0 | 3 | 1 | 4 | 75.0% | Contradiction |
@@ -937,7 +937,7 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | ANLI19088 | 0 | 0 | 3 | 3 | 100.0% | Neutral |
 | ANLI19107 | 3 | 1 | 0 | 4 | 75.0% | Entailment |
 | ANLI19427 | 0 | 1 | 3 | 4 | 75.0% | Neutral |
-| ANLI19738 | 1 | 2 | 1 | 4 | 50.0% | Contradiction |
+| ANLI19738 | 2 | 1 | 1 | 4 | 50.0% | Entailment |
 | ANLI20096 | 0 | 4 | 0 | 4 | 100.0% | Contradiction |
 | ANLI20241 | 0 | 4 | 0 | 4 | 100.0% | Contradiction |
 | ANLI20621 | 0 | 3 | 1 | 4 | 75.0% | Contradiction |
@@ -1004,6 +1004,6 @@ Updated: Tue, 23 Dec 2025 08:14:08 GMT
 | MNLI24494 | 1 | 0 | 2 | 3 | 66.7% | Neutral |
 | MNLI3932 | 2 | 0 | 1 | 3 | 66.7% | Entailment |
 
-**Average Agreement:** 78.16% (999 items)
-**Chi-square test:** χ² = 155.04, df = 2, p ≈ 0.0000 → Statistically significant (p < 0.001)
-**Fleiss’ κ (Kappa):** 0.452 → Moderate agreement
+**Average Agreement:** 78.13% (999 items)
+**Chi-square test:** χ² = 157.97, df = 2, p ≈ 0.0000 → Statistically significant (p < 0.001)
+**Fleiss’ κ (Kappa):** 0.451 → Moderate agreement
