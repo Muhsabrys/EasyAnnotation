@@ -1,6 +1,6 @@
 # 🧮 NLI Annotation Progress Report
 
-Updated: Tue, 30 Dec 2025 02:27:29 GMT
+Updated: Tue, 30 Dec 2025 06:22:07 GMT
 
 | Language | Annotated | Total | Progress |
 |-----------|------------|--------|-----------|
@@ -12,5 +12,5 @@ Updated: Tue, 30 Dec 2025 02:27:29 GMT
 | Hindi | 1 | 1000 | 0.10% |
 | Thai | 962 | 1000 | 96.20% |
 | Urdu | 402 | 1000 | 40.20% |
-| Turkish | 783 | 1000 | 78.30% |
+| Turkish | 873 | 1000 | 87.30% |
 | Cantonese | 957 | 1000 | 95.70% |
