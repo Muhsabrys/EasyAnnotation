@@ -8,13 +8,17 @@ on:
       - "Annotations/**"
       - "GoldStandard/**"
       - "scripts/phenomena_effects.js"
-  workflow_dispatch: # allows manual run from the Actions tab
+      - "package.json"
+  workflow_dispatch:
 
 jobs:
   analyze_phenomena:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -22,18 +26,17 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Dependencies
-        run: |
-          npm install xlsx papaparse
+      - name: Install dependencies
+        run: npm install
 
-      - name: Run Phenomenon Analysis
-        run: |
-          node scripts/phenomena_effects.js
+      - name: Run phenomenon analysis
+        run: node scripts/phenomena_effects.js
 
-      - name: Commit & Push Report
+      - name: Commit and push report
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add Reports/Phenomena_Report.md
-          git commit -m "🧩 Update Phenomena Analysis Report [skip ci]" || echo "No changes to commit"
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "🧩 Update Phenomena Analysis Report [skip ci]"
           git push
