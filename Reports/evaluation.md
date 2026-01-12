@@ -1,6 +1,6 @@
 # 🧪 Gold Standard Evaluation Report
 
-Updated: Sun, 11 Jan 2026 07:14:00 GMT
+Updated: Mon, 12 Jan 2026 07:19:28 GMT
 
 | Language | Accuracy | Entailment F1 | Contradiction F1 | Neutral F1 | NonSense % |
 |-----------|-----------|----------------|------------------|-------------|-------------|
@@ -11,8 +11,8 @@ Updated: Sun, 11 Jan 2026 07:14:00 GMT
 | Chinese | 28.11% | 36.0 | 16.8 | 26.1 | 78.3% |
 | Hindi | 0.00% | 0.0 | 0.0 | 0.0 | 99.9% |
 | Thai | 29.00% | 37.5 | 27.9 | 18.7 | 3.8% |
-| Urdu | 31.81% | 41.2 | 26.8 | 23.7 | 40.9% |
+| Urdu | 31.71% | 39.2 | 29.3 | 24.2 | 25.9% |
 | Turkish | 25.20% | 33.8 | 17.6 | 20.6 | 12.7% |
 | Cantonese | 31.45% | 40.2 | 25.9 | 25.2 | 4.3% |
 
-**Overall Accuracy (excluding NonSense):** 26.49%
+**Overall Accuracy (excluding NonSense):** 26.59%
