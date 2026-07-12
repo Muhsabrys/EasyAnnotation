@@ -28,7 +28,8 @@ const validCodes = {
   "TH-L7-2025-NLI": "Thai",
   "UR-L8-2025-NLI": "Urdu",
   "TR-L9-2025-NLI": "Turkish",
-  "CN-L10-2025-NLI": "Cantonese"
+  "CN-L10-2025-NLI": "Cantonese",
+  "EN-L11-2025-NLI": "English"
 };
 const langCodeMap = {
   "German": "DE",
@@ -40,7 +41,8 @@ const langCodeMap = {
   "Thai": "TH",
   "Urdu": "UR",
   "Turkish": "TR",
-  "Cantonese": "CN"
+  "Cantonese": "CN",
+  "English": "EN"
 };
 
 let userLanguage = null;
