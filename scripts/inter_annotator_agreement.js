@@ -12,7 +12,7 @@ import * as XLSX from "xlsx";
 const GITHUB_REPO = "Muhsabrys/EasyAnnotation";
 const ANNOT_PATH = "Annotations/";
 const REPORT_PATH = "Reports/inter_annotator_agreement.md";
-const LANGS = ["DE", "AR", "ES", "PT", "ZH", "HI", "TH", "UR"];
+const LANGS = ["DE", "AR", "ES", "PT", "ZH", "HI", "TH", "UR", "EN"];
 const VALID_LABELS = ["Entailment", "Contradiction", "Neutral"];
 
 // ============ Helper Functions ============
