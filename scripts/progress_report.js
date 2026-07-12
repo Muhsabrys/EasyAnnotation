@@ -22,7 +22,8 @@ const LANGS = {
   TH: "Thai",
   UR: "Urdu",
   TR: "Turkish",
-  CN: "Cantonese"
+  CN: "Cantonese", 
+  EN: "English"
 };
 
 async function loadXLSX(url) {
