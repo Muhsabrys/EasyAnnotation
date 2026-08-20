@@ -1,6 +1,6 @@
 # 🧪 Gold Standard Evaluation Report
 
-Updated: Wed, 19 Aug 2026 07:28:37 GMT
+Updated: Thu, 20 Aug 2026 07:31:35 GMT
 
 | Language | Accuracy | Entailment F1 | Contradiction F1 | Neutral F1 | NonSense % |
 |-----------|-----------|----------------|------------------|-------------|-------------|
