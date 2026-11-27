@@ -1,6 +1,6 @@
 # 🧮 NLI Annotation Progress Report
 
-Updated: Thu, 26 Nov 2026 16:04:50 GMT
+Updated: Fri, 27 Nov 2026 15:53:09 GMT
 
 | Language | Annotated | Total | Progress |
 |-----------|------------|--------|-----------|
